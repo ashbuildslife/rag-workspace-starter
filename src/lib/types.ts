@@ -29,6 +29,8 @@ export interface RagAnswer {
 
 export interface Citation {
   documentName: string; chunkPosition: number; excerpt: string; score: number;
+  coverage: "direct" | "supporting";
+  verificationNote: string;
 }
 
 export interface SearchHistoryEntry {

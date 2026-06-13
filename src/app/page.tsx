@@ -120,10 +120,14 @@ export default function Home() {
               {demoAnswer.citations.map((c, i) => (
                 <div key={i} className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-semibold text-indigo-700">{c.documentName}</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-semibold text-indigo-700">{c.documentName}</span>
+                      <Badge tone={c.coverage === "direct" ? "green" : "slate"}>{c.coverage}</Badge>
+                    </div>
                     <span className="text-xs tabular-nums text-slate-400">chunk #{c.chunkPosition} · {c.score.toFixed(2)}</span>
                   </div>
                   <p className="mt-1 text-xs leading-5 text-slate-600">&ldquo;{c.excerpt}&rdquo;</p>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">{c.verificationNote}</p>
                 </div>
               ))}
             </div>

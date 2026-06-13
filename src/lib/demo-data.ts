@@ -35,9 +35,9 @@ const mockSearchResults: SearchResult[] = [
 export const demoAnswer: RagAnswer = {
   answer: "Based on the documents in your knowledge base, data retention periods vary by data type and regulatory context. Under the Q2 2026 Compliance Audit Report (Section 4.3), PII retention is limited to 7 years from last business interaction, with FINRA-regulated broker-dealer records potentially extended. The Data Processing Agreement with Vendor X (Clause 8.2b) requires data return or deletion within 30 days of contract termination. Employee data follows the corporate schedule in the Employee Handbook (Section 5.1.4): payroll 7 years, performance reviews 3 years post-employment, recruitment records 12 months. ISO 27001 classification in Appendix B provides additional category-specific retention guidance.",
   citations: [
-    { documentName: "Q2 2026 Compliance Audit Report.pdf", chunkPosition: 42, excerpt: "Data retention periods for PII must not exceed 7 years...", score: 0.92 },
-    { documentName: "Data Processing Agreement — Vendor X.docx", chunkPosition: 103, excerpt: "The Data Processor shall retain Personal Data only for the duration...", score: 0.87 },
-    { documentName: "Employee Handbook v3.1.pdf", chunkPosition: 301, excerpt: "Employee data retention follows the corporate schedule...", score: 0.81 }
+    { documentName: "Q2 2026 Compliance Audit Report.pdf", chunkPosition: 42, excerpt: "Data retention periods for PII must not exceed 7 years...", score: 0.92, coverage: "direct", verificationNote: "Supports the answer's 7-year PII retention claim." },
+    { documentName: "Data Processing Agreement — Vendor X.docx", chunkPosition: 103, excerpt: "The Data Processor shall retain Personal Data only for the duration...", score: 0.87, coverage: "direct", verificationNote: "Supports the 30-day deletion or return obligation after termination." },
+    { documentName: "Employee Handbook v3.1.pdf", chunkPosition: 301, excerpt: "Employee data retention follows the corporate schedule...", score: 0.81, coverage: "supporting", verificationNote: "Adds HR-specific retention schedules without driving the primary compliance answer." }
   ],
   confidence: "high", generatedAt: "2026-06-08T15:00:00Z"
 };

@@ -18,6 +18,28 @@ describe("search results", () => {
   it("answer has citations", () => {
     expect(demoSnapshot.answer?.citations.length).toBeGreaterThanOrEqual(2);
   });
+
+  it("citations include claim coverage notes", () => {
+    const citations = demoSnapshot.answer?.citations ?? [];
+    expect(citations.some(c => c.coverage === "direct")).toBe(true);
+    for (const citation of citations) {
+      expect(citation.verificationNote.length).toBeGreaterThan(24);
+    }
+  });
+
+  it("direct citations map back to retrieved chunks", () => {
+    const directCitations = demoSnapshot.answer?.citations.filter(c => c.coverage === "direct") ?? [];
+    expect(directCitations.length).toBeGreaterThanOrEqual(2);
+
+    for (const citation of directCitations) {
+      const matchingResult = demoSnapshot.searchResults.find(result =>
+        result.documentName === citation.documentName &&
+        result.score >= citation.score - 0.01 &&
+        result.confidence === "high"
+      );
+      expect(matchingResult).toBeDefined();
+    }
+  });
 });
 
 describe("parser pipeline", () => {
