@@ -40,6 +40,7 @@ export interface SearchHistoryEntry {
 export interface IngestionStatus {
   workspaceId: string; totalDocuments: number; totalChunks: number;
   avgParseQuality: number; lastIngestedAt: string;
+  staleThresholdDays: number; staleDocumentCount: number;
 }
 
 export interface ParserResult {

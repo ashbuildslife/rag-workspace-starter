@@ -67,4 +67,15 @@ describe("ingestion", () => {
       expect(times[i]).toBeLessThanOrEqual(times[i-1]);
     }
   });
+
+  it("reports stale document count when threshold is set", () => {
+    const status = demoSnapshot.ingestionStatus;
+    expect(status.staleThresholdDays).toBeGreaterThan(0);
+    expect(status.staleDocumentCount).toBeGreaterThanOrEqual(0);
+    expect(status.staleDocumentCount).toBeLessThanOrEqual(status.totalDocuments);
+  });
+
+  it("stale count is non-zero to surface freshness risk", () => {
+    expect(demoSnapshot.ingestionStatus.staleDocumentCount).toBeGreaterThan(0);
+  });
 });

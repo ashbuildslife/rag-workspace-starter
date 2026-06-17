@@ -52,7 +52,8 @@ export const demoSearchHistory: SearchHistoryEntry[] = [
 
 export const demoIngestionStatus: IngestionStatus = {
   workspaceId: "ws_legal", totalDocuments: 47, totalChunks: 1423,
-  avgParseQuality: 79, lastIngestedAt: "2026-06-07T11:00:00Z"
+  avgParseQuality: 79, lastIngestedAt: "2026-06-07T11:00:00Z",
+  staleThresholdDays: 90, staleDocumentCount: 3
 };
 
 export const demoSnapshot: RagSnapshot = {
