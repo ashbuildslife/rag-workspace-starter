@@ -42,6 +42,31 @@ describe("search results", () => {
   });
 });
 
+describe("answer grounding audit", () => {
+  it("accounts for cited and unsupported claims", () => {
+    const audit = demoSnapshot.answer?.groundingAudit;
+    expect(audit).toBeDefined();
+    expect(audit!.citedClaims + audit!.unsupportedClaimCount).toBe(audit!.totalClaims);
+    expect(audit!.citedClaims).toBe(demoSnapshot.answer?.citations.length);
+  });
+
+  it("requires review when an answer includes unsupported claims", () => {
+    const audit = demoSnapshot.answer?.groundingAudit;
+    expect(audit?.unsupportedClaimCount).toBeGreaterThan(0);
+    expect(audit?.reviewRequired).toBe(true);
+    expect(audit?.reviewNote).toMatch(/direct citation/i);
+  });
+
+  it("tracks stale citations separately from changed source documents", () => {
+    const citations = demoSnapshot.answer?.citations ?? [];
+    const citedDocumentNames = new Set(citations.map(citation => citation.documentName));
+    const staleCitedDocuments = demoDocuments.filter(
+      document => citedDocumentNames.has(document.name) && document.lastModifiedAt != null && document.lastModifiedAt > document.ingestedAt
+    );
+    expect(staleCitedDocuments.length).toBe(demoSnapshot.answer?.groundingAudit.staleCitationCount);
+  });
+});
+
 describe("parser pipeline", () => {
   it("identifies best parser", () => {
     const best = [...demoParserResults].sort((a, b) => b.quality - a.quality)[0];

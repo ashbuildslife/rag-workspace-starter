@@ -27,8 +27,14 @@ export interface SearchResult {
   confidence: ConfidenceLevel; method: "vector" | "bm25" | "hybrid";
 }
 
+export interface GroundingAudit {
+  totalClaims: number; citedClaims: number; unsupportedClaimCount: number;
+  staleCitationCount: number; reviewRequired: boolean; reviewNote: string;
+}
+
 export interface RagAnswer {
   answer: string; citations: Citation[]; confidence: ConfidenceLevel; generatedAt: string;
+  groundingAudit: GroundingAudit;
 }
 
 export interface Citation {

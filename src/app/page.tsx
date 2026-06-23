@@ -113,6 +113,17 @@ export default function Home() {
             <ConfidenceBadge level={demoAnswer.confidence} />
             <span className="text-xs text-slate-400">Generated {new Date(demoAnswer.generatedAt).toLocaleTimeString()}</span>
           </div>
+          {demoAnswer.groundingAudit.reviewRequired && (
+            <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge tone="amber">Human review required</Badge>
+                <span className="text-xs font-semibold text-amber-800">
+                  {demoAnswer.groundingAudit.unsupportedClaimCount} unsupported claim · {demoAnswer.groundingAudit.staleCitationCount} stale citations
+                </span>
+              </div>
+              <p className="mt-2 text-xs leading-5 text-amber-800">{demoAnswer.groundingAudit.reviewNote}</p>
+            </div>
+          )}
           <p className="mt-3 text-sm leading-7 text-slate-700">{demoAnswer.answer}</p>
           <div className="mt-4 border-t border-slate-100 pt-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Sources cited</p>

@@ -39,7 +39,16 @@ export const demoAnswer: RagAnswer = {
     { documentName: "Data Processing Agreement — Vendor X.docx", chunkPosition: 103, excerpt: "The Data Processor shall retain Personal Data only for the duration...", score: 0.87, coverage: "direct", verificationNote: "Supports the 30-day deletion or return obligation after termination." },
     { documentName: "Employee Handbook v3.1.pdf", chunkPosition: 301, excerpt: "Employee data retention follows the corporate schedule...", score: 0.81, coverage: "supporting", verificationNote: "Adds HR-specific retention schedules without driving the primary compliance answer." }
   ],
-  confidence: "high", generatedAt: "2026-06-08T15:00:00Z"
+  confidence: "high",
+  generatedAt: "2026-06-08T15:00:00Z",
+  groundingAudit: {
+    totalClaims: 4,
+    citedClaims: 3,
+    unsupportedClaimCount: 1,
+    staleCitationCount: 0,
+    reviewRequired: true,
+    reviewNote: "ISO Appendix B retention guidance is mentioned but needs a direct citation before auto-send."
+  }
 };
 
 export const demoSearchHistory: SearchHistoryEntry[] = [
