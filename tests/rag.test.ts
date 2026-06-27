@@ -57,6 +57,37 @@ describe("answer grounding audit", () => {
     expect(audit?.reviewNote).toMatch(/direct citation/i);
   });
 
+  it("maps every answer claim to attribution evidence or review action", () => {
+    const audit = demoSnapshot.answer?.groundingAudit;
+    expect(audit?.claimAttributions).toHaveLength(audit!.totalClaims);
+
+    const supported = audit!.claimAttributions.filter(attribution => attribution.supportStatus === "supported");
+    expect(supported).toHaveLength(audit!.citedClaims);
+
+    for (const attribution of supported) {
+      const matchingCitation = demoSnapshot.answer?.citations.find(citation =>
+        citation.documentName === attribution.citationDocumentName &&
+        citation.chunkPosition === attribution.citationChunkPosition
+      );
+      expect(matchingCitation).toBeDefined();
+      expect(attribution.supportingExcerpt).toBeTruthy();
+      expect(attribution.reviewerAction.length).toBeGreaterThan(24);
+    }
+  });
+
+  it("keeps unsupported claims out of citation mappings until review", () => {
+    const audit = demoSnapshot.answer?.groundingAudit;
+    const needsCitation = audit!.claimAttributions.filter(attribution => attribution.supportStatus === "needs_citation");
+    expect(needsCitation).toHaveLength(audit!.unsupportedClaimCount);
+
+    for (const attribution of needsCitation) {
+      expect(attribution.citationDocumentName).toBeNull();
+      expect(attribution.citationChunkPosition).toBeNull();
+      expect(attribution.supportingExcerpt).toBeNull();
+      expect(attribution.reviewerAction).toMatch(/citation|retrieve|attach/i);
+    }
+  });
+
   it("tracks stale citations separately from changed source documents", () => {
     const citations = demoSnapshot.answer?.citations ?? [];
     const citedDocumentNames = new Set(citations.map(citation => citation.documentName));

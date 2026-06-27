@@ -124,6 +124,25 @@ export default function Home() {
               <p className="mt-2 text-xs leading-5 text-amber-800">{demoAnswer.groundingAudit.reviewNote}</p>
             </div>
           )}
+          <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Claim attribution review</p>
+            <div className="mt-2 space-y-2">
+              {demoAnswer.groundingAudit.claimAttributions.map((attribution, i) => (
+                <div key={`${attribution.claim}-${i}`} className="rounded-xl border border-white bg-white px-3 py-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge tone={attribution.supportStatus === "supported" ? "green" : "amber"}>{attribution.supportStatus.replace("_", " ")}</Badge>
+                    <span className="text-xs font-semibold text-slate-700">Claim {i + 1}</span>
+                  </div>
+                  <p className="mt-1 text-xs leading-5 text-slate-600">{attribution.claim}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-400">
+                    {attribution.citationDocumentName != null && attribution.citationChunkPosition != null
+                      ? `${attribution.citationDocumentName} · chunk #${attribution.citationChunkPosition}`
+                      : attribution.reviewerAction}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
           <p className="mt-3 text-sm leading-7 text-slate-700">{demoAnswer.answer}</p>
           <div className="mt-4 border-t border-slate-100 pt-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Sources cited</p>

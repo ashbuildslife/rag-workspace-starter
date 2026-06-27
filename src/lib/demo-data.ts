@@ -47,7 +47,41 @@ export const demoAnswer: RagAnswer = {
     unsupportedClaimCount: 1,
     staleCitationCount: 0,
     reviewRequired: true,
-    reviewNote: "ISO Appendix B retention guidance is mentioned but needs a direct citation before auto-send."
+    reviewNote: "ISO Appendix B retention guidance is mentioned but needs a direct citation before auto-send.",
+    claimAttributions: [
+      {
+        claim: "PII retention is limited to seven years from last business interaction unless regulatory rules extend it.",
+        supportStatus: "supported",
+        citationDocumentName: "Q2 2026 Compliance Audit Report.pdf",
+        citationChunkPosition: 42,
+        supportingExcerpt: "Data retention periods for personally identifiable information (PII) must not exceed 7 years from the date of last business interaction.",
+        reviewerAction: "No action needed; direct citation covers the retention claim."
+      },
+      {
+        claim: "Vendor X must delete or return personal data within 30 calendar days after contract termination.",
+        supportStatus: "supported",
+        citationDocumentName: "Data Processing Agreement — Vendor X.docx",
+        citationChunkPosition: 103,
+        supportingExcerpt: "Upon termination, the Processor shall delete or return all Personal Data within 30 calendar days, certified in writing.",
+        reviewerAction: "No action needed; direct citation covers the processor deletion obligation."
+      },
+      {
+        claim: "Employee data follows the corporate schedule for payroll, performance reviews, and unsuccessful candidate records.",
+        supportStatus: "supported",
+        citationDocumentName: "Employee Handbook v3.1.pdf",
+        citationChunkPosition: 301,
+        supportingExcerpt: "Payroll records — 7 years, performance reviews — 3 years post-employment, recruitment records — 12 months.",
+        reviewerAction: "No action needed; supporting citation anchors the HR retention schedule."
+      },
+      {
+        claim: "ISO 27001 Appendix B provides additional category-specific retention guidance.",
+        supportStatus: "needs_citation",
+        citationDocumentName: null,
+        citationChunkPosition: null,
+        supportingExcerpt: null,
+        reviewerAction: "Retrieve and attach the ISO Appendix B chunk before auto-send."
+      }
+    ]
   }
 };
 

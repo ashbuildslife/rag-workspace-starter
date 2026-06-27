@@ -27,9 +27,21 @@ export interface SearchResult {
   confidence: ConfidenceLevel; method: "vector" | "bm25" | "hybrid";
 }
 
+export type ClaimSupportStatus = "supported" | "needs_citation" | "contradicted";
+
+export interface ClaimAttribution {
+  claim: string;
+  supportStatus: ClaimSupportStatus;
+  citationDocumentName: string | null;
+  citationChunkPosition: number | null;
+  supportingExcerpt: string | null;
+  reviewerAction: string;
+}
+
 export interface GroundingAudit {
   totalClaims: number; citedClaims: number; unsupportedClaimCount: number;
   staleCitationCount: number; reviewRequired: boolean; reviewNote: string;
+  claimAttributions: ClaimAttribution[];
 }
 
 export interface RagAnswer {
