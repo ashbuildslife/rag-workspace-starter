@@ -127,6 +127,14 @@ export const demoAnswer: RagAnswer = {
     staleCitationCount: 0,
     reviewRequired: true,
     reviewNote: "ISO Appendix B retention guidance is mentioned but needs a direct citation before auto-send.",
+    releaseGate: {
+      status: "review_required",
+      autoSendAllowed: false,
+      requiredReviewerRole: "compliance_reviewer",
+      blockers: [
+        "ISO 27001 Appendix B claim needs a direct citation before this answer can be sent externally."
+      ]
+    },
     claimAttributions: [
       {
         claim: "PII retention is limited to seven years from last business interaction unless regulatory rules extend it.",

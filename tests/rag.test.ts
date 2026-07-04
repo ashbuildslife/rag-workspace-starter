@@ -92,6 +92,25 @@ describe("answer grounding audit", () => {
     expect(audit?.reviewNote).toMatch(/direct citation/i);
   });
 
+  it("pauses answer release when grounding blockers remain", () => {
+    const audit = demoSnapshot.answer?.groundingAudit;
+    const gate = audit?.releaseGate;
+
+    expect(gate?.status).toBe("review_required");
+    expect(gate?.autoSendAllowed).toBe(false);
+    expect(gate?.requiredReviewerRole).toBe("compliance_reviewer");
+    expect(gate?.blockers).toHaveLength(audit!.unsupportedClaimCount);
+    expect(gate?.blockers.join(" ")).toMatch(/direct citation|Appendix B/i);
+  });
+
+  it("keeps the release gate aligned with human-review state", () => {
+    const audit = demoSnapshot.answer?.groundingAudit;
+    const gate = audit?.releaseGate;
+
+    expect(gate?.autoSendAllowed).toBe(!audit?.reviewRequired);
+    expect(gate?.blockers.length).toBeGreaterThanOrEqual(audit!.unsupportedClaimCount);
+  });
+
   it("maps every answer claim to attribution evidence or review action", () => {
     const audit = demoSnapshot.answer?.groundingAudit;
     expect(audit?.claimAttributions).toHaveLength(audit!.totalClaims);

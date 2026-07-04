@@ -49,9 +49,20 @@ export interface ClaimAttribution {
   reviewerAction: string;
 }
 
+export type ReleaseGateStatus = "ready" | "review_required" | "blocked";
+export type RequiredReviewerRole = "knowledge_owner" | "compliance_reviewer" | "security_reviewer" | null;
+
+export interface AnswerReleaseGate {
+  status: ReleaseGateStatus;
+  autoSendAllowed: boolean;
+  requiredReviewerRole: RequiredReviewerRole;
+  blockers: string[];
+}
+
 export interface GroundingAudit {
   totalClaims: number; citedClaims: number; unsupportedClaimCount: number;
   staleCitationCount: number; reviewRequired: boolean; reviewNote: string;
+  releaseGate: AnswerReleaseGate;
   claimAttributions: ClaimAttribution[];
 }
 
