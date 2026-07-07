@@ -77,6 +77,38 @@ describe("retrieval safety review", () => {
   });
 });
 
+describe("retrieval authorization", () => {
+  it("records pre-model permission checks for every retrieved chunk", () => {
+    for (const result of demoSnapshot.searchResults) {
+      expect(result.authorizationReview.checkedBeforeModel).toBe(true);
+      expect(result.authorizationReview.reviewNote.length).toBeGreaterThan(32);
+    }
+  });
+
+  it("keeps denied retrievals out of generated citations", () => {
+    const deniedResults = demoSnapshot.searchResults.filter(r => r.authorizationReview.status === "denied");
+    const citations = demoSnapshot.answer?.citations ?? [];
+    expect(deniedResults.length).toBeGreaterThan(0);
+
+    for (const result of deniedResults) {
+      expect(result.authorizationReview.allowedAudiences).toHaveLength(0);
+      expect(citations.some(citation => citation.documentName === result.documentName)).toBe(false);
+    }
+  });
+
+  it("uses only authorized retrievals for direct citations", () => {
+    const directCitations = demoSnapshot.answer?.citations.filter(c => c.coverage === "direct") ?? [];
+    expect(directCitations.length).toBeGreaterThan(0);
+
+    for (const citation of directCitations) {
+      const matchingResult = demoSnapshot.searchResults.find(result =>
+        result.documentName === citation.documentName && result.score >= citation.score - 0.01
+      );
+      expect(matchingResult?.authorizationReview.status).toBe("authorized");
+    }
+  });
+});
+
 describe("answer grounding audit", () => {
   it("accounts for cited and unsupported claims", () => {
     const audit = demoSnapshot.answer?.groundingAudit;

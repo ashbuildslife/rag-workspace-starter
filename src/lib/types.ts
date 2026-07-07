@@ -24,6 +24,15 @@ export interface Chunk {
 
 export type RetrievalSafetyStatus = "allowed" | "review_required" | "blocked";
 export type RetrievalRiskType = "none" | "embedded_instruction" | "egress_request" | "parser_error";
+export type RetrievalAuthorizationStatus = "authorized" | "review_required" | "denied";
+export type RetrievalAudience = "compliance" | "legal" | "hr" | "security" | "external_vendor";
+
+export interface RetrievalAuthorizationReview {
+  status: RetrievalAuthorizationStatus;
+  allowedAudiences: RetrievalAudience[];
+  checkedBeforeModel: boolean;
+  reviewNote: string;
+}
 
 export interface RetrievalSafetyReview {
   status: RetrievalSafetyStatus;
@@ -36,6 +45,7 @@ export interface SearchResult {
   chunkId: string; documentName: string; chunkText: string; score: number;
   confidence: ConfidenceLevel; method: "vector" | "bm25" | "hybrid";
   safetyReview: RetrievalSafetyReview;
+  authorizationReview: RetrievalAuthorizationReview;
 }
 
 export type ClaimSupportStatus = "supported" | "needs_citation" | "contradicted";

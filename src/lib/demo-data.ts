@@ -37,6 +37,12 @@ const mockSearchResults: SearchResult[] = [
       risk: "none",
       externalTarget: null,
       reviewNote: "No embedded instructions or external-target requests detected."
+    },
+    authorizationReview: {
+      status: "authorized",
+      allowedAudiences: ["compliance", "legal"],
+      checkedBeforeModel: true,
+      reviewNote: "Checked workspace membership and compliance/legal audience before this audit chunk reaches the model."
     }
   },
   {
@@ -51,6 +57,12 @@ const mockSearchResults: SearchResult[] = [
       risk: "none",
       externalTarget: null,
       reviewNote: "No embedded instructions or external-target requests detected."
+    },
+    authorizationReview: {
+      status: "authorized",
+      allowedAudiences: ["compliance", "legal"],
+      checkedBeforeModel: true,
+      reviewNote: "Vendor contract access is limited to compliance/legal reviewers before model context assembly."
     }
   },
   {
@@ -65,6 +77,12 @@ const mockSearchResults: SearchResult[] = [
       risk: "none",
       externalTarget: null,
       reviewNote: "No embedded instructions or external-target requests detected."
+    },
+    authorizationReview: {
+      status: "authorized",
+      allowedAudiences: ["hr", "compliance"],
+      checkedBeforeModel: true,
+      reviewNote: "HR handbook excerpt is available to HR/compliance audiences before answer generation."
     }
   },
   {
@@ -79,6 +97,12 @@ const mockSearchResults: SearchResult[] = [
       risk: "none",
       externalTarget: null,
       reviewNote: "No embedded instructions or external-target requests detected."
+    },
+    authorizationReview: {
+      status: "authorized",
+      allowedAudiences: ["security", "compliance"],
+      checkedBeforeModel: true,
+      reviewNote: "Security certification scope is approved for security/compliance retrieval before model use."
     }
   },
   {
@@ -93,6 +117,12 @@ const mockSearchResults: SearchResult[] = [
       risk: "parser_error",
       externalTarget: null,
       reviewNote: "Low-confidence table extraction must be re-parsed before it can support an answer."
+    },
+    authorizationReview: {
+      status: "review_required",
+      allowedAudiences: ["compliance"],
+      checkedBeforeModel: true,
+      reviewNote: "Spreadsheet row needs parser repair and owner review before this low-confidence chunk can support an answer."
     }
   },
   {
@@ -107,6 +137,12 @@ const mockSearchResults: SearchResult[] = [
       risk: "egress_request",
       externalTarget: "vendor-audit.example",
       reviewNote: "Untrusted retrieved text asks the assistant to send internal data to an external target; block it from answer context."
+    },
+    authorizationReview: {
+      status: "denied",
+      allowedAudiences: [],
+      checkedBeforeModel: true,
+      reviewNote: "Untrusted vendor upload is denied before model context because it requests external data exfiltration."
     }
   }
 ];

@@ -40,6 +40,7 @@ export default function Home() {
   const results = demoSnapshot.searchResults;
   const lowConfidenceCount = results.filter(r => r.confidence === "low").length;
   const blockedRetrievals = results.filter(r => r.safetyReview.status === "blocked").length;
+  const authorizationReviews = results.filter(r => r.authorizationReview.status !== "authorized").length;
   const parserWinner = demoParserResults.reduce((a, b) => a.quality > b.quality ? a : b);
 
   return (
@@ -69,7 +70,8 @@ export default function Home() {
             { label: "Total chunks", value: demoIngestionStatus.totalChunks.toLocaleString() },
             { label: "Avg parse quality", value: `${demoIngestionStatus.avgParseQuality}%` },
             { label: "Low confidence", value: lowConfidenceCount > 0 ? `${lowConfidenceCount} results` : "None" },
-            { label: "Safety blocks", value: blockedRetrievals > 0 ? `${blockedRetrievals} chunk` : "None" }
+            { label: "Safety blocks", value: blockedRetrievals > 0 ? `${blockedRetrievals} chunk` : "None" },
+            { label: "Auth reviews", value: authorizationReviews > 0 ? `${authorizationReviews} chunks` : "None" }
           ].map(s => (
             <div key={s.label} className="rounded-2xl bg-slate-950 p-4 text-white">
               <p className="text-sm text-slate-300">{s.label}</p>
@@ -84,7 +86,7 @@ export default function Home() {
         <Card>
           <h2 className="text-xl font-bold text-slate-950">Hybrid Search Results</h2>
           <p className="mt-1 text-sm leading-6 text-slate-600">
-            Vector (semantic) and BM25 (keyword) results compared. Each result shows method, confidence, and retrieval-safety review.
+            Vector (semantic) and BM25 (keyword) results compared. Each result shows method, confidence, retrieval safety, and pre-model authorization review.
           </p>
           <div className="mt-4 space-y-3">
             {results.map(r => (
@@ -94,6 +96,9 @@ export default function Home() {
                     <span className="text-xs font-semibold uppercase px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">{r.method.toUpperCase()}</span>
                     <Badge tone={r.safetyReview.status === "allowed" ? "green" : r.safetyReview.status === "blocked" ? "red" : "amber"}>
                       {r.safetyReview.status.replace("_", " ")}
+                    </Badge>
+                    <Badge tone={r.authorizationReview.status === "authorized" ? "green" : r.authorizationReview.status === "denied" ? "red" : "amber"}>
+                      {r.authorizationReview.status.replace("_", " ")}
                     </Badge>
                     <span className="text-xs text-slate-400">{r.documentName}</span>
                   </div>
@@ -109,6 +114,11 @@ export default function Home() {
                 {r.safetyReview.status !== "allowed" && (
                   <p className={`mt-2 text-xs font-semibold ${r.safetyReview.status === "blocked" ? "text-red-600" : "text-amber-700"}`}>
                     Retrieval safety: {r.safetyReview.reviewNote}{r.safetyReview.externalTarget != null ? ` External target: ${r.safetyReview.externalTarget}.` : ""}
+                  </p>
+                )}
+                {r.authorizationReview.status !== "authorized" && (
+                  <p className={`mt-2 text-xs font-semibold ${r.authorizationReview.status === "denied" ? "text-red-600" : "text-amber-700"}`}>
+                    Permission gate: {r.authorizationReview.reviewNote}
                   </p>
                 )}
               </div>
