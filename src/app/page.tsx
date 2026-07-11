@@ -41,6 +41,7 @@ export default function Home() {
   const lowConfidenceCount = results.filter(r => r.confidence === "low").length;
   const blockedRetrievals = results.filter(r => r.safetyReview.status === "blocked").length;
   const authorizationReviews = results.filter(r => r.authorizationReview.status !== "authorized").length;
+  const stalePermissionSnapshots = results.filter(r => r.authorizationReview.permissionSnapshotStatus === "stale").length;
   const parserWinner = demoParserResults.reduce((a, b) => a.quality > b.quality ? a : b);
 
   return (
@@ -71,7 +72,8 @@ export default function Home() {
             { label: "Avg parse quality", value: `${demoIngestionStatus.avgParseQuality}%` },
             { label: "Low confidence", value: lowConfidenceCount > 0 ? `${lowConfidenceCount} results` : "None" },
             { label: "Safety blocks", value: blockedRetrievals > 0 ? `${blockedRetrievals} chunk` : "None" },
-            { label: "Auth reviews", value: authorizationReviews > 0 ? `${authorizationReviews} chunks` : "None" }
+            { label: "Auth reviews", value: authorizationReviews > 0 ? `${authorizationReviews} chunks` : "None" },
+            { label: "Stale ACLs", value: stalePermissionSnapshots > 0 ? `${stalePermissionSnapshots} chunk` : "None" }
           ].map(s => (
             <div key={s.label} className="rounded-2xl bg-slate-950 p-4 text-white">
               <p className="text-sm text-slate-300">{s.label}</p>
@@ -100,6 +102,7 @@ export default function Home() {
                     <Badge tone={r.authorizationReview.status === "authorized" ? "green" : r.authorizationReview.status === "denied" ? "red" : "amber"}>
                       {r.authorizationReview.status.replace("_", " ")}
                     </Badge>
+                    {r.authorizationReview.permissionSnapshotStatus === "stale" && <Badge tone="red">stale ACL</Badge>}
                     <span className="text-xs text-slate-400">{r.documentName}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -118,7 +121,7 @@ export default function Home() {
                 )}
                 {r.authorizationReview.status !== "authorized" && (
                   <p className={`mt-2 text-xs font-semibold ${r.authorizationReview.status === "denied" ? "text-red-600" : "text-amber-700"}`}>
-                    Permission gate: {r.authorizationReview.reviewNote}
+                    Permission gate: {r.authorizationReview.reviewNote} ACL snapshot: {r.authorizationReview.indexedAclVersion} → {r.authorizationReview.sourceAclVersion}.
                   </p>
                 )}
               </div>

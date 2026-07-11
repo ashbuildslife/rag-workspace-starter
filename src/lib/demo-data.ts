@@ -42,6 +42,9 @@ const mockSearchResults: SearchResult[] = [
       status: "authorized",
       allowedAudiences: ["compliance", "legal"],
       checkedBeforeModel: true,
+      permissionSnapshotStatus: "current",
+      sourceAclVersion: "audit-acl-v14",
+      indexedAclVersion: "audit-acl-v14",
       reviewNote: "Checked workspace membership and compliance/legal audience before this audit chunk reaches the model."
     }
   },
@@ -62,6 +65,9 @@ const mockSearchResults: SearchResult[] = [
       status: "authorized",
       allowedAudiences: ["compliance", "legal"],
       checkedBeforeModel: true,
+      permissionSnapshotStatus: "current",
+      sourceAclVersion: "vendor-x-acl-v8",
+      indexedAclVersion: "vendor-x-acl-v8",
       reviewNote: "Vendor contract access is limited to compliance/legal reviewers before model context assembly."
     }
   },
@@ -82,6 +88,9 @@ const mockSearchResults: SearchResult[] = [
       status: "authorized",
       allowedAudiences: ["hr", "compliance"],
       checkedBeforeModel: true,
+      permissionSnapshotStatus: "current",
+      sourceAclVersion: "handbook-acl-v31",
+      indexedAclVersion: "handbook-acl-v31",
       reviewNote: "HR handbook excerpt is available to HR/compliance audiences before answer generation."
     }
   },
@@ -102,6 +111,9 @@ const mockSearchResults: SearchResult[] = [
       status: "authorized",
       allowedAudiences: ["security", "compliance"],
       checkedBeforeModel: true,
+      permissionSnapshotStatus: "current",
+      sourceAclVersion: "iso-scope-acl-v5",
+      indexedAclVersion: "iso-scope-acl-v5",
       reviewNote: "Security certification scope is approved for security/compliance retrieval before model use."
     }
   },
@@ -122,7 +134,10 @@ const mockSearchResults: SearchResult[] = [
       status: "review_required",
       allowedAudiences: ["compliance"],
       checkedBeforeModel: true,
-      reviewNote: "Spreadsheet row needs parser repair and owner review before this low-confidence chunk can support an answer."
+      permissionSnapshotStatus: "stale",
+      sourceAclVersion: "risk-matrix-acl-v19",
+      indexedAclVersion: "risk-matrix-acl-v18",
+      reviewNote: "Source permissions changed after indexing; refresh the stale ACL snapshot and repair parsing before this chunk can support an answer."
     }
   },
   {
@@ -142,6 +157,9 @@ const mockSearchResults: SearchResult[] = [
       status: "denied",
       allowedAudiences: [],
       checkedBeforeModel: true,
+      permissionSnapshotStatus: "current",
+      sourceAclVersion: "vendor-upload-acl-v2",
+      indexedAclVersion: "vendor-upload-acl-v2",
       reviewNote: "Untrusted vendor upload is denied before model context because it requests external data exfiltration."
     }
   }

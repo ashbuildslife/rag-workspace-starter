@@ -26,11 +26,15 @@ export type RetrievalSafetyStatus = "allowed" | "review_required" | "blocked";
 export type RetrievalRiskType = "none" | "embedded_instruction" | "egress_request" | "parser_error";
 export type RetrievalAuthorizationStatus = "authorized" | "review_required" | "denied";
 export type RetrievalAudience = "compliance" | "legal" | "hr" | "security" | "external_vendor";
+export type PermissionSnapshotStatus = "current" | "stale";
 
 export interface RetrievalAuthorizationReview {
   status: RetrievalAuthorizationStatus;
   allowedAudiences: RetrievalAudience[];
   checkedBeforeModel: boolean;
+  permissionSnapshotStatus: PermissionSnapshotStatus;
+  sourceAclVersion: string;
+  indexedAclVersion: string;
   reviewNote: string;
 }
 

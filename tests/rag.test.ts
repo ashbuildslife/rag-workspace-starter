@@ -107,6 +107,37 @@ describe("retrieval authorization", () => {
       expect(matchingResult?.authorizationReview.status).toBe("authorized");
     }
   });
+
+  it("records source and indexed ACL versions for every permission check", () => {
+    for (const result of demoSnapshot.searchResults) {
+      expect(result.authorizationReview.sourceAclVersion).toBeTruthy();
+      expect(result.authorizationReview.indexedAclVersion).toBeTruthy();
+    }
+  });
+
+  it("fails closed when the indexed permission snapshot is stale", () => {
+    const staleResults = demoSnapshot.searchResults.filter(
+      result => result.authorizationReview.sourceAclVersion !== result.authorizationReview.indexedAclVersion
+    );
+    expect(staleResults.length).toBeGreaterThan(0);
+
+    for (const result of staleResults) {
+      expect(result.authorizationReview.permissionSnapshotStatus).toBe("stale");
+      expect(result.authorizationReview.status).not.toBe("authorized");
+      expect(result.authorizationReview.reviewNote).toMatch(/permissions changed|stale ACL/i);
+    }
+  });
+
+  it("keeps stale permission snapshots out of generated citations", () => {
+    const staleResults = demoSnapshot.searchResults.filter(
+      result => result.authorizationReview.permissionSnapshotStatus === "stale"
+    );
+    const citations = demoSnapshot.answer?.citations ?? [];
+
+    for (const result of staleResults) {
+      expect(citations.some(citation => citation.documentName === result.documentName)).toBe(false);
+    }
+  });
 });
 
 describe("answer grounding audit", () => {
