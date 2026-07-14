@@ -27,6 +27,17 @@ export type RetrievalRiskType = "none" | "embedded_instruction" | "egress_reques
 export type RetrievalAuthorizationStatus = "authorized" | "review_required" | "denied";
 export type RetrievalAudience = "compliance" | "legal" | "hr" | "security" | "external_vendor";
 export type PermissionSnapshotStatus = "current" | "stale";
+export type SourceAuthorityLevel = "source_of_record" | "approved_reference" | "unverified";
+export type SourceAnswerUse = "direct" | "supporting_only" | "blocked";
+
+export interface RetrievalSourceAuthorityReview {
+  level: SourceAuthorityLevel;
+  answerUse: SourceAnswerUse;
+  owner: string;
+  sourceSystem: string;
+  checkedBeforeModel: boolean;
+  reviewNote: string;
+}
 
 export interface RetrievalAuthorizationReview {
   status: RetrievalAuthorizationStatus;
@@ -49,6 +60,7 @@ export interface SearchResult {
   chunkId: string; documentName: string; chunkText: string; score: number;
   confidence: ConfidenceLevel; method: "vector" | "bm25" | "hybrid";
   safetyReview: RetrievalSafetyReview;
+  sourceAuthorityReview: RetrievalSourceAuthorityReview;
   authorizationReview: RetrievalAuthorizationReview;
 }
 

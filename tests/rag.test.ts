@@ -77,6 +77,41 @@ describe("retrieval safety review", () => {
   });
 });
 
+describe("retrieval source authority", () => {
+  it("records an owned source-authority decision before model context assembly", () => {
+    for (const result of demoSnapshot.searchResults) {
+      expect(result.sourceAuthorityReview.checkedBeforeModel).toBe(true);
+      expect(result.sourceAuthorityReview.owner).toBeTruthy();
+      expect(result.sourceAuthorityReview.sourceSystem).toBeTruthy();
+      expect(result.sourceAuthorityReview.reviewNote.length).toBeGreaterThan(32);
+    }
+  });
+
+  it("allows direct citations only from sources of record", () => {
+    const directCitations = demoSnapshot.answer?.citations.filter(citation => citation.coverage === "direct") ?? [];
+    expect(directCitations.length).toBeGreaterThan(0);
+
+    for (const citation of directCitations) {
+      const matchingResult = demoSnapshot.searchResults.find(result => result.documentName === citation.documentName);
+      expect(matchingResult?.sourceAuthorityReview.level).toBe("source_of_record");
+      expect(matchingResult?.sourceAuthorityReview.answerUse).toBe("direct");
+    }
+  });
+
+  it("keeps unverified or authority-blocked sources out of citations", () => {
+    const blockedResults = demoSnapshot.searchResults.filter(
+      result => result.sourceAuthorityReview.level === "unverified" || result.sourceAuthorityReview.answerUse === "blocked"
+    );
+    const citations = demoSnapshot.answer?.citations ?? [];
+    expect(blockedResults.length).toBeGreaterThan(0);
+
+    for (const result of blockedResults) {
+      expect(result.sourceAuthorityReview.answerUse).toBe("blocked");
+      expect(citations.some(citation => citation.documentName === result.documentName)).toBe(false);
+    }
+  });
+});
+
 describe("retrieval authorization", () => {
   it("records pre-model permission checks for every retrieved chunk", () => {
     for (const result of demoSnapshot.searchResults) {

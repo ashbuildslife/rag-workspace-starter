@@ -38,6 +38,14 @@ const mockSearchResults: SearchResult[] = [
       externalTarget: null,
       reviewNote: "No embedded instructions or external-target requests detected."
     },
+    sourceAuthorityReview: {
+      level: "source_of_record",
+      answerUse: "direct",
+      owner: "Compliance Assurance",
+      sourceSystem: "GRC audit register",
+      checkedBeforeModel: true,
+      reviewNote: "Approved audit record is authoritative for direct compliance answers."
+    },
     authorizationReview: {
       status: "authorized",
       allowedAudiences: ["compliance", "legal"],
@@ -60,6 +68,14 @@ const mockSearchResults: SearchResult[] = [
       risk: "none",
       externalTarget: null,
       reviewNote: "No embedded instructions or external-target requests detected."
+    },
+    sourceAuthorityReview: {
+      level: "source_of_record",
+      answerUse: "direct",
+      owner: "Legal Operations",
+      sourceSystem: "Contract lifecycle system",
+      checkedBeforeModel: true,
+      reviewNote: "Executed agreement is the source of record for Vendor X obligations."
     },
     authorizationReview: {
       status: "authorized",
@@ -84,6 +100,14 @@ const mockSearchResults: SearchResult[] = [
       externalTarget: null,
       reviewNote: "No embedded instructions or external-target requests detected."
     },
+    sourceAuthorityReview: {
+      level: "approved_reference",
+      answerUse: "supporting_only",
+      owner: "People Operations",
+      sourceSystem: "HR policy portal",
+      checkedBeforeModel: true,
+      reviewNote: "Published handbook may support HR context but does not replace the compliance source of record."
+    },
     authorizationReview: {
       status: "authorized",
       allowedAudiences: ["hr", "compliance"],
@@ -106,6 +130,14 @@ const mockSearchResults: SearchResult[] = [
       risk: "none",
       externalTarget: null,
       reviewNote: "No embedded instructions or external-target requests detected."
+    },
+    sourceAuthorityReview: {
+      level: "approved_reference",
+      answerUse: "supporting_only",
+      owner: "Information Security",
+      sourceSystem: "ISMS document register",
+      checkedBeforeModel: true,
+      reviewNote: "Certification scope is approved reference material; retrieve the governing appendix for a direct answer."
     },
     authorizationReview: {
       status: "authorized",
@@ -130,6 +162,14 @@ const mockSearchResults: SearchResult[] = [
       externalTarget: null,
       reviewNote: "Low-confidence table extraction must be re-parsed before it can support an answer."
     },
+    sourceAuthorityReview: {
+      level: "unverified",
+      answerUse: "blocked",
+      owner: "Vendor Risk Operations",
+      sourceSystem: "Spreadsheet upload queue",
+      checkedBeforeModel: true,
+      reviewNote: "Parse failure prevents authority verification, so this upload cannot support the answer."
+    },
     authorizationReview: {
       status: "review_required",
       allowedAudiences: ["compliance"],
@@ -152,6 +192,14 @@ const mockSearchResults: SearchResult[] = [
       risk: "egress_request",
       externalTarget: "vendor-audit.example",
       reviewNote: "Untrusted retrieved text asks the assistant to send internal data to an external target; block it from answer context."
+    },
+    sourceAuthorityReview: {
+      level: "unverified",
+      answerUse: "blocked",
+      owner: "Unassigned",
+      sourceSystem: "External upload quarantine",
+      checkedBeforeModel: true,
+      reviewNote: "Unowned external upload is not an approved knowledge source and is blocked from answer use."
     },
     authorizationReview: {
       status: "denied",
