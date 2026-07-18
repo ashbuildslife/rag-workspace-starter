@@ -112,6 +112,40 @@ describe("retrieval source authority", () => {
   });
 });
 
+describe("retrieval source versioning", () => {
+  it("checks every retrieved source version before model context assembly", () => {
+    for (const result of demoSnapshot.searchResults) {
+      expect(result.versionReview.checkedBeforeModel).toBe(true);
+      expect(result.versionReview.indexedVersionId).toBeTruthy();
+      expect(result.versionReview.reviewNote.length).toBeGreaterThan(32);
+    }
+  });
+
+  it("fails closed for superseded and unregistered source versions", () => {
+    const heldResults = demoSnapshot.searchResults.filter(result => result.versionReview.status !== "current");
+    expect(heldResults.some(result => result.versionReview.status === "superseded")).toBe(true);
+    expect(heldResults.some(result => result.versionReview.status === "unregistered")).toBe(true);
+
+    for (const result of heldResults) {
+      expect(result.versionReview.answerUse).toBe("blocked");
+      if (result.versionReview.status === "superseded") {
+        expect(result.versionReview.currentVersionId).not.toBe(result.versionReview.indexedVersionId);
+        expect(result.versionReview.supersededBy).toBeTruthy();
+      }
+    }
+  });
+
+  it("keeps version-blocked retrievals out of generated citations", () => {
+    const blockedResults = demoSnapshot.searchResults.filter(result => result.versionReview.answerUse === "blocked");
+    const citations = demoSnapshot.answer?.citations ?? [];
+    expect(blockedResults.length).toBeGreaterThan(0);
+
+    for (const result of blockedResults) {
+      expect(citations.some(citation => citation.documentName === result.documentName)).toBe(false);
+    }
+  });
+});
+
 describe("retrieval authorization", () => {
   it("records pre-model permission checks for every retrieved chunk", () => {
     for (const result of demoSnapshot.searchResults) {

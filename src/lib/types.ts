@@ -29,6 +29,18 @@ export type RetrievalAudience = "compliance" | "legal" | "hr" | "security" | "ex
 export type PermissionSnapshotStatus = "current" | "stale";
 export type SourceAuthorityLevel = "source_of_record" | "approved_reference" | "unverified";
 export type SourceAnswerUse = "direct" | "supporting_only" | "blocked";
+export type RetrievalVersionStatus = "current" | "superseded" | "unregistered";
+export type RetrievalVersionAnswerUse = "allowed" | "blocked";
+
+export interface RetrievalVersionReview {
+  status: RetrievalVersionStatus;
+  indexedVersionId: string;
+  currentVersionId: string | null;
+  supersededBy: string | null;
+  checkedBeforeModel: boolean;
+  answerUse: RetrievalVersionAnswerUse;
+  reviewNote: string;
+}
 
 export interface RetrievalSourceAuthorityReview {
   level: SourceAuthorityLevel;
@@ -61,6 +73,7 @@ export interface SearchResult {
   confidence: ConfidenceLevel; method: "vector" | "bm25" | "hybrid";
   safetyReview: RetrievalSafetyReview;
   sourceAuthorityReview: RetrievalSourceAuthorityReview;
+  versionReview: RetrievalVersionReview;
   authorizationReview: RetrievalAuthorizationReview;
 }
 

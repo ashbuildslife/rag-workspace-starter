@@ -46,6 +46,15 @@ const mockSearchResults: SearchResult[] = [
       checkedBeforeModel: true,
       reviewNote: "Approved audit record is authoritative for direct compliance answers."
     },
+    versionReview: {
+      status: "current",
+      indexedVersionId: "audit-report-q2-2026-v1",
+      currentVersionId: "audit-report-q2-2026-v1",
+      supersededBy: null,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The indexed audit report matches the current registered version before model context assembly."
+    },
     authorizationReview: {
       status: "authorized",
       allowedAudiences: ["compliance", "legal"],
@@ -76,6 +85,15 @@ const mockSearchResults: SearchResult[] = [
       sourceSystem: "Contract lifecycle system",
       checkedBeforeModel: true,
       reviewNote: "Executed agreement is the source of record for Vendor X obligations."
+    },
+    versionReview: {
+      status: "current",
+      indexedVersionId: "vendor-x-dpa-v4",
+      currentVersionId: "vendor-x-dpa-v4",
+      supersededBy: null,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The indexed agreement matches the executed version registered in the contract lifecycle system."
     },
     authorizationReview: {
       status: "authorized",
@@ -108,6 +126,15 @@ const mockSearchResults: SearchResult[] = [
       checkedBeforeModel: true,
       reviewNote: "Published handbook may support HR context but does not replace the compliance source of record."
     },
+    versionReview: {
+      status: "current",
+      indexedVersionId: "employee-handbook-v3.1",
+      currentVersionId: "employee-handbook-v3.1",
+      supersededBy: null,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The retrieved handbook chunk matches the currently published policy version."
+    },
     authorizationReview: {
       status: "authorized",
       allowedAudiences: ["hr", "compliance"],
@@ -138,6 +165,15 @@ const mockSearchResults: SearchResult[] = [
       sourceSystem: "ISMS document register",
       checkedBeforeModel: true,
       reviewNote: "Certification scope is approved reference material; retrieve the governing appendix for a direct answer."
+    },
+    versionReview: {
+      status: "superseded",
+      indexedVersionId: "iso-scope-v5",
+      currentVersionId: "iso-scope-v6",
+      supersededBy: "ISO 27001:2022 Certification Scope revision 6",
+      checkedBeforeModel: true,
+      answerUse: "blocked",
+      reviewNote: "The source register now points to revision 6, so revision 5 must be retired before retrieval can support an answer."
     },
     authorizationReview: {
       status: "authorized",
@@ -170,6 +206,15 @@ const mockSearchResults: SearchResult[] = [
       checkedBeforeModel: true,
       reviewNote: "Parse failure prevents authority verification, so this upload cannot support the answer."
     },
+    versionReview: {
+      status: "unregistered",
+      indexedVersionId: "vendor-risk-upload-2026-06-07",
+      currentVersionId: null,
+      supersededBy: null,
+      checkedBeforeModel: true,
+      answerUse: "blocked",
+      reviewNote: "The failed spreadsheet upload has no verified current version in the source register."
+    },
     authorizationReview: {
       status: "review_required",
       allowedAudiences: ["compliance"],
@@ -201,6 +246,15 @@ const mockSearchResults: SearchResult[] = [
       checkedBeforeModel: true,
       reviewNote: "Unowned external upload is not an approved knowledge source and is blocked from answer use."
     },
+    versionReview: {
+      status: "unregistered",
+      indexedVersionId: "external-upload-unregistered",
+      currentVersionId: null,
+      supersededBy: null,
+      checkedBeforeModel: true,
+      answerUse: "blocked",
+      reviewNote: "The external upload has no approved current version and cannot enter model context."
+    },
     authorizationReview: {
       status: "denied",
       allowedAudiences: [],
@@ -214,7 +268,7 @@ const mockSearchResults: SearchResult[] = [
 ];
 
 export const demoAnswer: RagAnswer = {
-  answer: "Based on the documents in your knowledge base, data retention periods vary by data type and regulatory context. Under the Q2 2026 Compliance Audit Report (Section 4.3), PII retention is limited to 7 years from last business interaction, with FINRA-regulated broker-dealer records potentially extended. The Data Processing Agreement with Vendor X (Clause 8.2b) requires data return or deletion within 30 days of contract termination. Employee data follows the corporate schedule in the Employee Handbook (Section 5.1.4): payroll 7 years, performance reviews 3 years post-employment, recruitment records 12 months. ISO 27001 classification in Appendix B provides additional category-specific retention guidance.",
+  answer: "Based on the documents in your knowledge base, data retention periods vary by data type and regulatory context. Under the Q2 2026 Compliance Audit Report (Section 4.3), PII retention is limited to 7 years from last business interaction, with FINRA-regulated broker-dealer records potentially extended. The Data Processing Agreement with Vendor X (Clause 8.2b) requires data return or deletion within 30 days of contract termination. Employee data follows the corporate schedule in the Employee Handbook (Section 5.1.4): payroll 7 years, performance reviews 3 years post-employment, recruitment records 12 months. ISO-specific guidance is withheld because the retrieved certification-scope chunk is superseded; ingest revision 6 before adding it to the answer.",
   citations: [
     { documentName: "Q2 2026 Compliance Audit Report.pdf", chunkPosition: 42, excerpt: "Data retention periods for PII must not exceed 7 years...", score: 0.92, coverage: "direct", verificationNote: "Supports the answer's 7-year PII retention claim." },
     { documentName: "Data Processing Agreement — Vendor X.docx", chunkPosition: 103, excerpt: "The Data Processor shall retain Personal Data only for the duration...", score: 0.87, coverage: "direct", verificationNote: "Supports the 30-day deletion or return obligation after termination." },
@@ -228,13 +282,13 @@ export const demoAnswer: RagAnswer = {
     unsupportedClaimCount: 1,
     staleCitationCount: 0,
     reviewRequired: true,
-    reviewNote: "ISO Appendix B retention guidance is mentioned but needs a direct citation before auto-send.",
+    reviewNote: "ISO-specific guidance is withheld because the retrieved scope chunk is superseded; ingest revision 6 and attach a direct citation before auto-send.",
     releaseGate: {
       status: "review_required",
       autoSendAllowed: false,
       requiredReviewerRole: "compliance_reviewer",
       blockers: [
-        "ISO 27001 Appendix B claim needs a direct citation before this answer can be sent externally."
+        "ISO 27001 scope revision 5 is superseded; ingest revision 6 and attach the Appendix B citation before this answer can be sent externally."
       ]
     },
     claimAttributions: [
@@ -263,12 +317,12 @@ export const demoAnswer: RagAnswer = {
         reviewerAction: "No action needed; supporting citation anchors the HR retention schedule."
       },
       {
-        claim: "ISO 27001 Appendix B provides additional category-specific retention guidance.",
+        claim: "ISO-specific retention guidance is withheld until the current certification-scope revision is ingested.",
         supportStatus: "needs_citation",
         citationDocumentName: null,
         citationChunkPosition: null,
         supportingExcerpt: null,
-        reviewerAction: "Retrieve and attach the ISO Appendix B chunk before auto-send."
+        reviewerAction: "Ingest revision 6 and attach its Appendix B chunk before adding ISO-specific guidance."
       }
     ]
   }
