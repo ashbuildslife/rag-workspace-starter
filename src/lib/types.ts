@@ -31,6 +31,19 @@ export type SourceAuthorityLevel = "source_of_record" | "approved_reference" | "
 export type SourceAnswerUse = "direct" | "supporting_only" | "blocked";
 export type RetrievalVersionStatus = "current" | "superseded" | "unregistered";
 export type RetrievalVersionAnswerUse = "allowed" | "blocked";
+export type RetrievalDeduplicationStatus = "canonical" | "suppressed_duplicate";
+export type RetrievalDuplicateType = "none" | "byte_exact";
+export type RetrievalDeduplicationAnswerUse = "allowed" | "blocked";
+
+export interface RetrievalDeduplicationReview {
+  status: RetrievalDeduplicationStatus;
+  duplicateType: RetrievalDuplicateType;
+  contentFingerprint: string;
+  canonicalChunkId: string;
+  checkedBeforeModel: boolean;
+  answerUse: RetrievalDeduplicationAnswerUse;
+  reviewNote: string;
+}
 
 export interface RetrievalVersionReview {
   status: RetrievalVersionStatus;
@@ -74,6 +87,7 @@ export interface SearchResult {
   safetyReview: RetrievalSafetyReview;
   sourceAuthorityReview: RetrievalSourceAuthorityReview;
   versionReview: RetrievalVersionReview;
+  deduplicationReview: RetrievalDeduplicationReview;
   authorizationReview: RetrievalAuthorizationReview;
 }
 
@@ -111,7 +125,7 @@ export interface RagAnswer {
 }
 
 export interface Citation {
-  documentName: string; chunkPosition: number; excerpt: string; score: number;
+  sourceChunkId: string; documentName: string; chunkPosition: number; excerpt: string; score: number;
   coverage: "direct" | "supporting";
   verificationNote: string;
 }

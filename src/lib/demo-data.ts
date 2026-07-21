@@ -55,6 +55,64 @@ const mockSearchResults: SearchResult[] = [
       answerUse: "allowed",
       reviewNote: "The indexed audit report matches the current registered version before model context assembly."
     },
+    deduplicationReview: {
+      status: "canonical",
+      duplicateType: "none",
+      contentFingerprint: "sha256:efc3475a7055ec2ab3afde78f4791fb73168a50bef6e3d589b8887efae1de36f",
+      canonicalChunkId: "c_042",
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "Byte-exact fingerprint registered; this canonical audit chunk is selected once for model context."
+    },
+    authorizationReview: {
+      status: "authorized",
+      allowedAudiences: ["compliance", "legal"],
+      checkedBeforeModel: true,
+      permissionSnapshotStatus: "current",
+      sourceAclVersion: "audit-acl-v14",
+      indexedAclVersion: "audit-acl-v14",
+      reviewNote: "Checked workspace membership and compliance/legal audience before this audit chunk reaches the model."
+    }
+  },
+  {
+    chunkId: "c_042_hybrid_copy",
+    documentName: "Q2 2026 Compliance Audit Report.pdf",
+    chunkText: "Section 4.3: Data retention periods for personally identifiable information (PII) must not exceed 7 years from the date of last business interaction, unless extended by regulatory requirement (e.g., FINRA Rule 4511 for broker-dealer records).",
+    score: 0.91,
+    confidence: "high",
+    method: "hybrid",
+    safetyReview: {
+      status: "allowed",
+      risk: "none",
+      externalTarget: null,
+      reviewNote: "No embedded instructions or external-target requests detected."
+    },
+    sourceAuthorityReview: {
+      level: "source_of_record",
+      answerUse: "direct",
+      owner: "Compliance Assurance",
+      sourceSystem: "GRC audit register",
+      checkedBeforeModel: true,
+      reviewNote: "Approved audit record is authoritative for direct compliance answers."
+    },
+    versionReview: {
+      status: "current",
+      indexedVersionId: "audit-report-q2-2026-v1",
+      currentVersionId: "audit-report-q2-2026-v1",
+      supersededBy: null,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The indexed audit report matches the current registered version before model context assembly."
+    },
+    deduplicationReview: {
+      status: "suppressed_duplicate",
+      duplicateType: "byte_exact",
+      contentFingerprint: "sha256:efc3475a7055ec2ab3afde78f4791fb73168a50bef6e3d589b8887efae1de36f",
+      canonicalChunkId: "c_042",
+      checkedBeforeModel: true,
+      answerUse: "blocked",
+      reviewNote: "A byte-exact copy arrived through the hybrid route; suppress it before context assembly so it cannot crowd out distinct evidence."
+    },
     authorizationReview: {
       status: "authorized",
       allowedAudiences: ["compliance", "legal"],
@@ -94,6 +152,15 @@ const mockSearchResults: SearchResult[] = [
       checkedBeforeModel: true,
       answerUse: "allowed",
       reviewNote: "The indexed agreement matches the executed version registered in the contract lifecycle system."
+    },
+    deduplicationReview: {
+      status: "canonical",
+      duplicateType: "none",
+      contentFingerprint: "sha256:a5b3f2f01f3526edb2f384ddf74dd3bac821065b20ec027a0b5171cbc74f838d",
+      canonicalChunkId: "c_103",
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "Byte-exact fingerprint registered; this canonical agreement chunk is selected once for model context."
     },
     authorizationReview: {
       status: "authorized",
@@ -135,6 +202,15 @@ const mockSearchResults: SearchResult[] = [
       answerUse: "allowed",
       reviewNote: "The retrieved handbook chunk matches the currently published policy version."
     },
+    deduplicationReview: {
+      status: "canonical",
+      duplicateType: "none",
+      contentFingerprint: "sha256:b0e03d29f67d795f284007418a8e53b3e353dfc7d7cd26df32217901a75fe0d9",
+      canonicalChunkId: "c_301",
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "Byte-exact fingerprint registered; this canonical handbook chunk is selected once for model context."
+    },
     authorizationReview: {
       status: "authorized",
       allowedAudiences: ["hr", "compliance"],
@@ -174,6 +250,15 @@ const mockSearchResults: SearchResult[] = [
       checkedBeforeModel: true,
       answerUse: "blocked",
       reviewNote: "The source register now points to revision 6, so revision 5 must be retired before retrieval can support an answer."
+    },
+    deduplicationReview: {
+      status: "canonical",
+      duplicateType: "none",
+      contentFingerprint: "sha256:d25ee3860faaaef2a428f9c9eefe336a179032e8eb089638ab9e128b9968feb8",
+      canonicalChunkId: "c_150",
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "Byte-exact fingerprint registered before the separate source-version hold is evaluated."
     },
     authorizationReview: {
       status: "authorized",
@@ -215,6 +300,15 @@ const mockSearchResults: SearchResult[] = [
       answerUse: "blocked",
       reviewNote: "The failed spreadsheet upload has no verified current version in the source register."
     },
+    deduplicationReview: {
+      status: "canonical",
+      duplicateType: "none",
+      contentFingerprint: "sha256:760d1992422370134a0db7b2e9f672a7d707a20bf1d80da0e46e395c0dc5ffc7",
+      canonicalChunkId: "c_055",
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "Byte-exact fingerprint registered before parser and source-authority review routes this chunk to remediation."
+    },
     authorizationReview: {
       status: "review_required",
       allowedAudiences: ["compliance"],
@@ -255,6 +349,15 @@ const mockSearchResults: SearchResult[] = [
       answerUse: "blocked",
       reviewNote: "The external upload has no approved current version and cannot enter model context."
     },
+    deduplicationReview: {
+      status: "canonical",
+      duplicateType: "none",
+      contentFingerprint: "sha256:6393730458033e3edc7a70faed4e6e1fc6707af7537cba1f02dafc9e7fc0b28d",
+      canonicalChunkId: "c_612",
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "Byte-exact fingerprint registered before retrieval safety blocks this untrusted chunk from model context."
+    },
     authorizationReview: {
       status: "denied",
       allowedAudiences: [],
@@ -270,9 +373,9 @@ const mockSearchResults: SearchResult[] = [
 export const demoAnswer: RagAnswer = {
   answer: "Based on the documents in your knowledge base, data retention periods vary by data type and regulatory context. Under the Q2 2026 Compliance Audit Report (Section 4.3), PII retention is limited to 7 years from last business interaction, with FINRA-regulated broker-dealer records potentially extended. The Data Processing Agreement with Vendor X (Clause 8.2b) requires data return or deletion within 30 days of contract termination. Employee data follows the corporate schedule in the Employee Handbook (Section 5.1.4): payroll 7 years, performance reviews 3 years post-employment, recruitment records 12 months. ISO-specific guidance is withheld because the retrieved certification-scope chunk is superseded; ingest revision 6 before adding it to the answer.",
   citations: [
-    { documentName: "Q2 2026 Compliance Audit Report.pdf", chunkPosition: 42, excerpt: "Data retention periods for PII must not exceed 7 years...", score: 0.92, coverage: "direct", verificationNote: "Supports the answer's 7-year PII retention claim." },
-    { documentName: "Data Processing Agreement — Vendor X.docx", chunkPosition: 103, excerpt: "The Data Processor shall retain Personal Data only for the duration...", score: 0.87, coverage: "direct", verificationNote: "Supports the 30-day deletion or return obligation after termination." },
-    { documentName: "Employee Handbook v3.1.pdf", chunkPosition: 301, excerpt: "Employee data retention follows the corporate schedule...", score: 0.81, coverage: "supporting", verificationNote: "Adds HR-specific retention schedules without driving the primary compliance answer." }
+    { sourceChunkId: "c_042", documentName: "Q2 2026 Compliance Audit Report.pdf", chunkPosition: 42, excerpt: "Data retention periods for PII must not exceed 7 years...", score: 0.92, coverage: "direct", verificationNote: "Supports the answer's 7-year PII retention claim." },
+    { sourceChunkId: "c_103", documentName: "Data Processing Agreement — Vendor X.docx", chunkPosition: 103, excerpt: "The Data Processor shall retain Personal Data only for the duration...", score: 0.87, coverage: "direct", verificationNote: "Supports the 30-day deletion or return obligation after termination." },
+    { sourceChunkId: "c_301", documentName: "Employee Handbook v3.1.pdf", chunkPosition: 301, excerpt: "Employee data retention follows the corporate schedule...", score: 0.81, coverage: "supporting", verificationNote: "Adds HR-specific retention schedules without driving the primary compliance answer." }
   ],
   confidence: "high",
   generatedAt: "2026-06-08T15:00:00Z",

@@ -146,6 +146,52 @@ describe("retrieval source versioning", () => {
   });
 });
 
+describe("retrieval deduplication", () => {
+  it("fingerprints every retrieval before model context assembly", () => {
+    for (const result of demoSnapshot.searchResults) {
+      expect(result.deduplicationReview.checkedBeforeModel).toBe(true);
+      expect(result.deduplicationReview.contentFingerprint).toMatch(/^sha256:[a-f0-9]{64}$/);
+      expect(result.deduplicationReview.canonicalChunkId).toBeTruthy();
+      expect(result.deduplicationReview.reviewNote.length).toBeGreaterThan(32);
+    }
+  });
+
+  it("suppresses byte-exact duplicates in favor of one canonical chunk", () => {
+    const suppressed = demoSnapshot.searchResults.filter(
+      result => result.deduplicationReview.status === "suppressed_duplicate"
+    );
+    expect(suppressed.length).toBeGreaterThan(0);
+
+    for (const result of suppressed) {
+      const canonical = demoSnapshot.searchResults.find(
+        candidate => candidate.chunkId === result.deduplicationReview.canonicalChunkId
+      );
+      expect(result.deduplicationReview.duplicateType).toBe("byte_exact");
+      expect(result.deduplicationReview.answerUse).toBe("blocked");
+      expect(canonical?.deduplicationReview.status).toBe("canonical");
+      expect(canonical?.deduplicationReview.answerUse).toBe("allowed");
+      expect(canonical?.deduplicationReview.contentFingerprint).toBe(result.deduplicationReview.contentFingerprint);
+      expect(canonical?.chunkText).toBe(result.chunkText);
+    }
+  });
+
+  it("keeps duplicate-suppressed chunks out of generated citations", () => {
+    const blockedChunkIds = new Set(
+      demoSnapshot.searchResults
+        .filter(result => result.deduplicationReview.answerUse === "blocked")
+        .map(result => result.chunkId)
+    );
+    const citations = demoSnapshot.answer?.citations ?? [];
+    expect(blockedChunkIds.size).toBeGreaterThan(0);
+
+    for (const citation of citations) {
+      expect(blockedChunkIds.has(citation.sourceChunkId)).toBe(false);
+      const source = demoSnapshot.searchResults.find(result => result.chunkId === citation.sourceChunkId);
+      expect(source?.deduplicationReview.answerUse).toBe("allowed");
+    }
+  });
+});
+
 describe("retrieval authorization", () => {
   it("records pre-model permission checks for every retrieved chunk", () => {
     for (const result of demoSnapshot.searchResults) {
