@@ -34,6 +34,19 @@ export type RetrievalVersionAnswerUse = "allowed" | "blocked";
 export type RetrievalDeduplicationStatus = "canonical" | "suppressed_duplicate";
 export type RetrievalDuplicateType = "none" | "byte_exact";
 export type RetrievalDeduplicationAnswerUse = "allowed" | "blocked";
+export type RetrievalConflictStatus = "clear" | "conflict_detected";
+export type RetrievalConflictResolution = "not_needed" | "source_authority";
+export type RetrievalConflictAnswerUse = "allowed" | "blocked";
+
+export interface RetrievalConflictReview {
+  status: RetrievalConflictStatus;
+  topic: string | null;
+  conflictsWithChunkIds: string[];
+  resolution: RetrievalConflictResolution;
+  checkedBeforeModel: boolean;
+  answerUse: RetrievalConflictAnswerUse;
+  reviewNote: string;
+}
 
 export interface RetrievalDeduplicationReview {
   status: RetrievalDeduplicationStatus;
@@ -88,6 +101,7 @@ export interface SearchResult {
   sourceAuthorityReview: RetrievalSourceAuthorityReview;
   versionReview: RetrievalVersionReview;
   deduplicationReview: RetrievalDeduplicationReview;
+  conflictReview: RetrievalConflictReview;
   authorizationReview: RetrievalAuthorizationReview;
 }
 

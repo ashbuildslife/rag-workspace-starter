@@ -1,4 +1,4 @@
-import type { Document, IngestionStatus, ParserResult, RagAnswer, RagSnapshot, SearchHistoryEntry, SearchResult, Workspace, WorkspaceMember } from "./types";
+import type { Document, IngestionStatus, ParserResult, RagAnswer, RagSnapshot, RetrievalConflictReview, SearchHistoryEntry, SearchResult, Workspace, WorkspaceMember } from "./types";
 
 export const demoWorkspace: Workspace = {
   id: "ws_legal", name: "Legal & Compliance Knowledge Base", memberCount: 12, documentCount: 47, totalChunks: 1423
@@ -23,6 +23,16 @@ export const demoParserResults: ParserResult[] = [
   { parser: "mistral-ocr", quality: 96, textSample: "Section 3.2 — Remote Work Policy: Employees working remotely must adhere to the same security standards as on-site staff...", chunks: 203, errors: 0 },
   { parser: "pypdf-baseline", quality: 31, textSample: "Q2 2 0 2 6\nC o m p l i a n c e\nA u d i t\nR e p o r t\n\n(Table data lost — detected as image)...", chunks: 45, errors: 28 }
 ];
+
+const noRetrievalConflict: RetrievalConflictReview = {
+  status: "clear",
+  topic: null,
+  conflictsWithChunkIds: [],
+  resolution: "not_needed",
+  checkedBeforeModel: true,
+  answerUse: "allowed",
+  reviewNote: "No material contradiction detected against the other eligible retrievals before model context assembly."
+};
 
 const mockSearchResults: SearchResult[] = [
   {
@@ -63,6 +73,15 @@ const mockSearchResults: SearchResult[] = [
       checkedBeforeModel: true,
       answerUse: "allowed",
       reviewNote: "Byte-exact fingerprint registered; this canonical audit chunk is selected once for model context."
+    },
+    conflictReview: {
+      status: "conflict_detected",
+      topic: "PII retention period",
+      conflictsWithChunkIds: ["c_219"],
+      resolution: "source_authority",
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The audit source of record overrides the conflicting ten-year claim in the lower-authority privacy FAQ."
     },
     authorizationReview: {
       status: "authorized",
@@ -113,6 +132,7 @@ const mockSearchResults: SearchResult[] = [
       answerUse: "blocked",
       reviewNote: "A byte-exact copy arrived through the hybrid route; suppress it before context assembly so it cannot crowd out distinct evidence."
     },
+    conflictReview: { ...noRetrievalConflict },
     authorizationReview: {
       status: "authorized",
       allowedAudiences: ["compliance", "legal"],
@@ -162,6 +182,7 @@ const mockSearchResults: SearchResult[] = [
       answerUse: "allowed",
       reviewNote: "Byte-exact fingerprint registered; this canonical agreement chunk is selected once for model context."
     },
+    conflictReview: { ...noRetrievalConflict },
     authorizationReview: {
       status: "authorized",
       allowedAudiences: ["compliance", "legal"],
@@ -211,6 +232,7 @@ const mockSearchResults: SearchResult[] = [
       answerUse: "allowed",
       reviewNote: "Byte-exact fingerprint registered; this canonical handbook chunk is selected once for model context."
     },
+    conflictReview: { ...noRetrievalConflict },
     authorizationReview: {
       status: "authorized",
       allowedAudiences: ["hr", "compliance"],
@@ -219,6 +241,64 @@ const mockSearchResults: SearchResult[] = [
       sourceAclVersion: "handbook-acl-v31",
       indexedAclVersion: "handbook-acl-v31",
       reviewNote: "HR handbook excerpt is available to HR/compliance audiences before answer generation."
+    }
+  },
+  {
+    chunkId: "c_219",
+    documentName: "Legacy Privacy FAQ.pdf",
+    chunkText: "Retention FAQ: All customer PII must be retained for at least 10 years after the last business interaction, with no exceptions.",
+    score: 0.78,
+    confidence: "medium",
+    method: "hybrid",
+    safetyReview: {
+      status: "allowed",
+      risk: "none",
+      externalTarget: null,
+      reviewNote: "No embedded instructions or external-target requests detected."
+    },
+    sourceAuthorityReview: {
+      level: "approved_reference",
+      answerUse: "supporting_only",
+      owner: "Privacy Enablement",
+      sourceSystem: "Policy intranet",
+      checkedBeforeModel: true,
+      reviewNote: "The FAQ is approved guidance but does not override the compliance audit source of record."
+    },
+    versionReview: {
+      status: "current",
+      indexedVersionId: "privacy-faq-2026-v2",
+      currentVersionId: "privacy-faq-2026-v2",
+      supersededBy: null,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The indexed FAQ matches the currently published intranet version, so freshness alone does not resolve its conflict."
+    },
+    deduplicationReview: {
+      status: "canonical",
+      duplicateType: "none",
+      contentFingerprint: "sha256:26b6f035f0710208a35491ae3c89b39b50706691c29c074d0d3f37dd67eab235",
+      canonicalChunkId: "c_219",
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "Unique content fingerprint retained so the conflict can be evaluated rather than hidden as a duplicate."
+    },
+    conflictReview: {
+      status: "conflict_detected",
+      topic: "PII retention period",
+      conflictsWithChunkIds: ["c_042"],
+      resolution: "source_authority",
+      checkedBeforeModel: true,
+      answerUse: "blocked",
+      reviewNote: "The ten-year FAQ claim conflicts with the seven-year source-of-record limit and is held out of model context."
+    },
+    authorizationReview: {
+      status: "authorized",
+      allowedAudiences: ["compliance", "legal"],
+      checkedBeforeModel: true,
+      permissionSnapshotStatus: "current",
+      sourceAclVersion: "privacy-faq-acl-v2",
+      indexedAclVersion: "privacy-faq-acl-v2",
+      reviewNote: "The FAQ is audience-authorized, but authorization does not override the separate evidence-conflict hold."
     }
   },
   {
@@ -260,6 +340,7 @@ const mockSearchResults: SearchResult[] = [
       answerUse: "allowed",
       reviewNote: "Byte-exact fingerprint registered before the separate source-version hold is evaluated."
     },
+    conflictReview: { ...noRetrievalConflict },
     authorizationReview: {
       status: "authorized",
       allowedAudiences: ["security", "compliance"],
@@ -309,6 +390,7 @@ const mockSearchResults: SearchResult[] = [
       answerUse: "allowed",
       reviewNote: "Byte-exact fingerprint registered before parser and source-authority review routes this chunk to remediation."
     },
+    conflictReview: { ...noRetrievalConflict },
     authorizationReview: {
       status: "review_required",
       allowedAudiences: ["compliance"],
@@ -358,6 +440,7 @@ const mockSearchResults: SearchResult[] = [
       answerUse: "allowed",
       reviewNote: "Byte-exact fingerprint registered before retrieval safety blocks this untrusted chunk from model context."
     },
+    conflictReview: { ...noRetrievalConflict },
     authorizationReview: {
       status: "denied",
       allowedAudiences: [],

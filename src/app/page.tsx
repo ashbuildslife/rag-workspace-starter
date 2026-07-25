@@ -44,6 +44,7 @@ export default function Home() {
   const sourceAuthorityHolds = results.filter(r => r.sourceAuthorityReview.answerUse === "blocked").length;
   const sourceVersionHolds = results.filter(r => r.versionReview.answerUse === "blocked").length;
   const suppressedDuplicates = results.filter(r => r.deduplicationReview.status === "suppressed_duplicate").length;
+  const knowledgeConflictHolds = results.filter(r => r.conflictReview.answerUse === "blocked").length;
   const stalePermissionSnapshots = results.filter(r => r.authorizationReview.permissionSnapshotStatus === "stale").length;
   const parserWinner = demoParserResults.reduce((a, b) => a.quality > b.quality ? a : b);
 
@@ -79,6 +80,7 @@ export default function Home() {
             { label: "Authority holds", value: sourceAuthorityHolds > 0 ? `${sourceAuthorityHolds} chunks` : "None" },
             { label: "Version holds", value: sourceVersionHolds > 0 ? `${sourceVersionHolds} chunks` : "None" },
             { label: "Duplicates suppressed", value: suppressedDuplicates > 0 ? `${suppressedDuplicates} chunk` : "None" },
+            { label: "Conflict holds", value: knowledgeConflictHolds > 0 ? `${knowledgeConflictHolds} chunk` : "None" },
             { label: "Stale ACLs", value: stalePermissionSnapshots > 0 ? `${stalePermissionSnapshots} chunk` : "None" }
           ].map(s => (
             <div key={s.label} className="rounded-2xl bg-slate-950 p-4 text-white">
@@ -94,7 +96,7 @@ export default function Home() {
         <Card>
           <h2 className="text-xl font-bold text-slate-950">Hybrid Search Results</h2>
           <p className="mt-1 text-sm leading-6 text-slate-600">
-            Vector (semantic) and BM25 (keyword) results compared. Each result shows method, confidence, source authority, source version, byte-exact duplicate suppression, retrieval safety, and pre-model authorization review.
+            Vector (semantic) and BM25 (keyword) results compared. Each result shows method, confidence, source authority, source version, duplicate suppression, evidence-conflict resolution, retrieval safety, and pre-model authorization review.
           </p>
           <div className="mt-4 space-y-3">
             {results.map(r => (
@@ -117,6 +119,9 @@ export default function Home() {
                     <Badge tone={r.deduplicationReview.status === "canonical" ? "green" : "red"}>
                       {r.deduplicationReview.status.replaceAll("_", " ")}
                     </Badge>
+                    {r.conflictReview.status === "conflict_detected" && (
+                      <Badge tone={r.conflictReview.answerUse === "allowed" ? "amber" : "red"}>evidence conflict</Badge>
+                    )}
                     {r.authorizationReview.permissionSnapshotStatus === "stale" && <Badge tone="red">stale ACL</Badge>}
                     <span className="text-xs text-slate-400">{r.documentName}</span>
                   </div>
@@ -147,6 +152,11 @@ export default function Home() {
                 {r.deduplicationReview.answerUse === "blocked" && (
                   <p className="mt-2 text-xs font-semibold text-red-600">
                     Duplicate gate: {r.deduplicationReview.reviewNote} Canonical chunk: {r.deduplicationReview.canonicalChunkId}.
+                  </p>
+                )}
+                {r.conflictReview.status === "conflict_detected" && (
+                  <p className={`mt-2 text-xs font-semibold ${r.conflictReview.answerUse === "blocked" ? "text-red-600" : "text-amber-700"}`}>
+                    Conflict gate: {r.conflictReview.reviewNote} Topic: {r.conflictReview.topic}. Compared chunks: {r.conflictReview.conflictsWithChunkIds.join(", ")}.
                   </p>
                 )}
                 {r.authorizationReview.status !== "authorized" && (

@@ -192,6 +192,46 @@ describe("retrieval deduplication", () => {
   });
 });
 
+describe("retrieval conflict review", () => {
+  it("checks every retrieval for evidence conflicts before model context assembly", () => {
+    for (const result of demoSnapshot.searchResults) {
+      expect(result.conflictReview.checkedBeforeModel).toBe(true);
+      expect(result.conflictReview.reviewNote.length).toBeGreaterThan(32);
+    }
+  });
+
+  it("records a reciprocal conflict and resolves it by source authority", () => {
+    const held = demoSnapshot.searchResults.find(result => result.conflictReview.answerUse === "blocked");
+    expect(held).toBeDefined();
+    expect(held?.conflictReview.status).toBe("conflict_detected");
+    expect(held?.conflictReview.resolution).toBe("source_authority");
+    expect(held?.sourceAuthorityReview.level).toBe("approved_reference");
+
+    const preferred = demoSnapshot.searchResults.find(
+      result => held?.conflictReview.conflictsWithChunkIds.includes(result.chunkId)
+    );
+    expect(preferred?.conflictReview.status).toBe("conflict_detected");
+    expect(preferred?.conflictReview.conflictsWithChunkIds).toContain(held?.chunkId);
+    expect(preferred?.sourceAuthorityReview.level).toBe("source_of_record");
+    expect(preferred?.conflictReview.answerUse).toBe("allowed");
+  });
+
+  it("keeps lower-authority conflicting evidence out of generated citations", () => {
+    const heldChunkIds = new Set(
+      demoSnapshot.searchResults
+        .filter(result => result.conflictReview.answerUse === "blocked")
+        .map(result => result.chunkId)
+    );
+    expect(heldChunkIds.size).toBeGreaterThan(0);
+
+    for (const citation of demoSnapshot.answer?.citations ?? []) {
+      expect(heldChunkIds.has(citation.sourceChunkId)).toBe(false);
+      const source = demoSnapshot.searchResults.find(result => result.chunkId === citation.sourceChunkId);
+      expect(source?.conflictReview.answerUse).toBe("allowed");
+    }
+  });
+});
+
 describe("retrieval authorization", () => {
   it("records pre-model permission checks for every retrieved chunk", () => {
     for (const result of demoSnapshot.searchResults) {
