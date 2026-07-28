@@ -181,7 +181,7 @@ export default function Home() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone="amber">Human review required</Badge>
                 <span className="text-xs font-semibold text-amber-800">
-                  {demoAnswer.groundingAudit.unsupportedClaimCount} unsupported claim · {demoAnswer.groundingAudit.staleCitationCount} stale citations
+                  {demoAnswer.groundingAudit.unsupportedClaimCount} unsupported claim · {demoAnswer.groundingAudit.forceGapClaimCount} citation force gap · {demoAnswer.groundingAudit.staleCitationCount} stale citations
                 </span>
               </div>
               <p className="mt-2 text-xs leading-5 text-amber-800">{demoAnswer.groundingAudit.reviewNote}</p>
@@ -217,6 +217,19 @@ export default function Home() {
                       ? `${attribution.citationDocumentName} · chunk #${attribution.citationChunkPosition}`
                       : attribution.reviewerAction}
                   </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <Badge tone={attribution.evidenceForceReview.status === "force_calibrated" ? "green" : attribution.evidenceForceReview.status === "force_gap" ? "red" : "amber"}>
+                      {attribution.evidenceForceReview.status.replaceAll("_", " ")}
+                    </Badge>
+                    {attribution.evidenceForceReview.primaryAxis != null && (
+                      <span className="text-xs font-semibold text-red-700">Axis: {attribution.evidenceForceReview.primaryAxis}</span>
+                    )}
+                  </div>
+                  {attribution.evidenceForceReview.status === "force_gap" && (
+                    <p className="mt-2 text-xs leading-5 text-red-700">
+                      Strongest warranted wording: {attribution.evidenceForceReview.warrantedClaim}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

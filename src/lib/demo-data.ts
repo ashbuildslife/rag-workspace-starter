@@ -454,9 +454,9 @@ const mockSearchResults: SearchResult[] = [
 ];
 
 export const demoAnswer: RagAnswer = {
-  answer: "Based on the documents in your knowledge base, data retention periods vary by data type and regulatory context. Under the Q2 2026 Compliance Audit Report (Section 4.3), PII retention is limited to 7 years from last business interaction, with FINRA-regulated broker-dealer records potentially extended. The Data Processing Agreement with Vendor X (Clause 8.2b) requires data return or deletion within 30 days of contract termination. Employee data follows the corporate schedule in the Employee Handbook (Section 5.1.4): payroll 7 years, performance reviews 3 years post-employment, recruitment records 12 months. ISO-specific guidance is withheld because the retrieved certification-scope chunk is superseded; ingest revision 6 before adding it to the answer.",
+  answer: "Based on the documents in your knowledge base, data retention periods vary by data type and regulatory context. Under the Q2 2026 Compliance Audit Report (Section 4.3), PII retention is limited to 7 years from last business interaction, and FINRA-regulated broker-dealer records are extended beyond seven years. The Data Processing Agreement with Vendor X (Clause 8.2b) requires data return or deletion within 30 days of contract termination. Employee data follows the corporate schedule in the Employee Handbook (Section 5.1.4): payroll 7 years, performance reviews 3 years post-employment, recruitment records 12 months. ISO-specific guidance is withheld because the retrieved certification-scope chunk is superseded; ingest revision 6 before adding it to the answer.",
   citations: [
-    { sourceChunkId: "c_042", documentName: "Q2 2026 Compliance Audit Report.pdf", chunkPosition: 42, excerpt: "Data retention periods for PII must not exceed 7 years...", score: 0.92, coverage: "direct", verificationNote: "Supports the answer's 7-year PII retention claim." },
+    { sourceChunkId: "c_042", documentName: "Q2 2026 Compliance Audit Report.pdf", chunkPosition: 42, excerpt: "Data retention periods for PII must not exceed 7 years...", score: 0.92, coverage: "direct", verificationNote: "Supports the seven-year PII limit; the stronger FINRA extension wording remains held for evidence-force review." },
     { sourceChunkId: "c_103", documentName: "Data Processing Agreement — Vendor X.docx", chunkPosition: 103, excerpt: "The Data Processor shall retain Personal Data only for the duration...", score: 0.87, coverage: "direct", verificationNote: "Supports the 30-day deletion or return obligation after termination." },
     { sourceChunkId: "c_301", documentName: "Employee Handbook v3.1.pdf", chunkPosition: 301, excerpt: "Employee data retention follows the corporate schedule...", score: 0.81, coverage: "supporting", verificationNote: "Adds HR-specific retention schedules without driving the primary compliance answer." }
   ],
@@ -466,25 +466,34 @@ export const demoAnswer: RagAnswer = {
     totalClaims: 4,
     citedClaims: 3,
     unsupportedClaimCount: 1,
+    forceGapClaimCount: 1,
     staleCitationCount: 0,
     reviewRequired: true,
-    reviewNote: "ISO-specific guidance is withheld because the retrieved scope chunk is superseded; ingest revision 6 and attach a direct citation before auto-send.",
+    reviewNote: "Auto-send is paused for an over-strong FINRA extension claim and missing current ISO guidance; calibrate the wording and attach a direct citation to revision 6.",
     releaseGate: {
       status: "review_required",
       autoSendAllowed: false,
       requiredReviewerRole: "compliance_reviewer",
       blockers: [
+        "The cited audit says regulatory requirements may extend retention; rewrite the FINRA clause without asserting that every broker-dealer record is extended.",
         "ISO 27001 scope revision 5 is superseded; ingest revision 6 and attach the Appendix B citation before this answer can be sent externally."
       ]
     },
     claimAttributions: [
       {
-        claim: "PII retention is limited to seven years from last business interaction unless regulatory rules extend it.",
+        claim: "PII retention is limited to seven years, and FINRA-regulated broker-dealer records are extended beyond seven years.",
         supportStatus: "supported",
         citationDocumentName: "Q2 2026 Compliance Audit Report.pdf",
         citationChunkPosition: 42,
-        supportingExcerpt: "Data retention periods for personally identifiable information (PII) must not exceed 7 years from the date of last business interaction.",
-        reviewerAction: "No action needed; direct citation covers the retention claim."
+        supportingExcerpt: "Data retention periods for personally identifiable information (PII) must not exceed 7 years, unless extended by regulatory requirement (e.g., FINRA Rule 4511).",
+        reviewerAction: "Rewrite the FINRA clause to preserve the source's conditional wording before release.",
+        evidenceForceReview: {
+          status: "force_gap",
+          primaryAxis: "modality",
+          checkedAgainstCitation: true,
+          warrantedClaim: "PII retention is limited to seven years unless an applicable regulatory requirement extends it; verify FINRA applicability before asserting an extension.",
+          reviewNote: "The citation permits a conditional exception, but the draft overstates that possibility as a universal FINRA extension."
+        }
       },
       {
         claim: "Vendor X must delete or return personal data within 30 calendar days after contract termination.",
@@ -492,7 +501,14 @@ export const demoAnswer: RagAnswer = {
         citationDocumentName: "Data Processing Agreement — Vendor X.docx",
         citationChunkPosition: 103,
         supportingExcerpt: "Upon termination, the Processor shall delete or return all Personal Data within 30 calendar days, certified in writing.",
-        reviewerAction: "No action needed; direct citation covers the processor deletion obligation."
+        reviewerAction: "No action needed; direct citation covers the processor deletion obligation.",
+        evidenceForceReview: {
+          status: "force_calibrated",
+          primaryAxis: null,
+          checkedAgainstCitation: true,
+          warrantedClaim: "Vendor X must delete or return personal data within 30 calendar days after contract termination.",
+          reviewNote: "The draft preserves the cited agreement's action, timing, and scope without strengthening them."
+        }
       },
       {
         claim: "Employee data follows the corporate schedule for payroll, performance reviews, and unsuccessful candidate records.",
@@ -500,7 +516,14 @@ export const demoAnswer: RagAnswer = {
         citationDocumentName: "Employee Handbook v3.1.pdf",
         citationChunkPosition: 301,
         supportingExcerpt: "Payroll records — 7 years, performance reviews — 3 years post-employment, recruitment records — 12 months.",
-        reviewerAction: "No action needed; supporting citation anchors the HR retention schedule."
+        reviewerAction: "No action needed; supporting citation anchors the HR retention schedule.",
+        evidenceForceReview: {
+          status: "force_calibrated",
+          primaryAxis: null,
+          checkedAgainstCitation: true,
+          warrantedClaim: "Employee data follows the corporate schedule for payroll, performance reviews, and unsuccessful candidate records.",
+          reviewNote: "The answer summarizes the three cited record categories without widening their scope or precision."
+        }
       },
       {
         claim: "ISO-specific retention guidance is withheld until the current certification-scope revision is ingested.",
@@ -508,7 +531,14 @@ export const demoAnswer: RagAnswer = {
         citationDocumentName: null,
         citationChunkPosition: null,
         supportingExcerpt: null,
-        reviewerAction: "Ingest revision 6 and attach its Appendix B chunk before adding ISO-specific guidance."
+        reviewerAction: "Ingest revision 6 and attach its Appendix B chunk before adding ISO-specific guidance.",
+        evidenceForceReview: {
+          status: "not_evaluated",
+          primaryAxis: null,
+          checkedAgainstCitation: false,
+          warrantedClaim: null,
+          reviewNote: "Evidence force cannot be evaluated until the current Appendix B passage is retrieved and cited."
+        }
       }
     ]
   }

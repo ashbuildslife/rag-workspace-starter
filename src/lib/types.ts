@@ -106,6 +106,16 @@ export interface SearchResult {
 }
 
 export type ClaimSupportStatus = "supported" | "needs_citation" | "contradicted";
+export type ClaimEvidenceForceStatus = "force_calibrated" | "force_gap" | "not_evaluated";
+export type ClaimEvidenceForceAxis = "relation" | "modality" | "scope" | "temporal" | "numeric" | null;
+
+export interface ClaimEvidenceForceReview {
+  status: ClaimEvidenceForceStatus;
+  primaryAxis: ClaimEvidenceForceAxis;
+  checkedAgainstCitation: boolean;
+  warrantedClaim: string | null;
+  reviewNote: string;
+}
 
 export interface ClaimAttribution {
   claim: string;
@@ -114,6 +124,7 @@ export interface ClaimAttribution {
   citationChunkPosition: number | null;
   supportingExcerpt: string | null;
   reviewerAction: string;
+  evidenceForceReview: ClaimEvidenceForceReview;
 }
 
 export type ReleaseGateStatus = "ready" | "review_required" | "blocked";
@@ -127,7 +138,7 @@ export interface AnswerReleaseGate {
 }
 
 export interface GroundingAudit {
-  totalClaims: number; citedClaims: number; unsupportedClaimCount: number;
+  totalClaims: number; citedClaims: number; unsupportedClaimCount: number; forceGapClaimCount: number;
   staleCitationCount: number; reviewRequired: boolean; reviewNote: string;
   releaseGate: AnswerReleaseGate;
   claimAttributions: ClaimAttribution[];

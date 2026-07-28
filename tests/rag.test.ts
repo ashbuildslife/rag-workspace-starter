@@ -317,7 +317,7 @@ describe("answer grounding audit", () => {
     expect(gate?.status).toBe("review_required");
     expect(gate?.autoSendAllowed).toBe(false);
     expect(gate?.requiredReviewerRole).toBe("compliance_reviewer");
-    expect(gate?.blockers).toHaveLength(audit!.unsupportedClaimCount);
+    expect(gate?.blockers).toHaveLength(audit!.unsupportedClaimCount + audit!.forceGapClaimCount);
     expect(gate?.blockers.join(" ")).toMatch(/direct citation|Appendix B/i);
   });
 
@@ -358,6 +358,47 @@ describe("answer grounding audit", () => {
       expect(attribution.supportingExcerpt).toBeNull();
       expect(attribution.reviewerAction).toMatch(/citation|retrieve|attach/i);
     }
+  });
+
+  it("checks citation force for every claim that has a citation", () => {
+    const audit = demoSnapshot.answer?.groundingAudit;
+
+    for (const attribution of audit!.claimAttributions) {
+      expect(attribution.evidenceForceReview.reviewNote.length).toBeGreaterThan(32);
+      if (attribution.citationDocumentName != null) {
+        expect(attribution.evidenceForceReview.checkedAgainstCitation).toBe(true);
+        expect(attribution.evidenceForceReview.status).not.toBe("not_evaluated");
+      } else {
+        expect(attribution.evidenceForceReview.checkedAgainstCitation).toBe(false);
+        expect(attribution.evidenceForceReview.status).toBe("not_evaluated");
+      }
+    }
+  });
+
+  it("records a non-vacuous evidence-force gap against a real citation", () => {
+    const gap = demoSnapshot.answer?.groundingAudit.claimAttributions.find(
+      attribution => attribution.evidenceForceReview.status === "force_gap"
+    );
+
+    expect(gap).toBeDefined();
+    expect(gap?.citationDocumentName).toBeTruthy();
+    expect(gap?.citationChunkPosition).not.toBeNull();
+    expect(["relation", "modality", "scope", "temporal", "numeric"]).toContain(gap?.evidenceForceReview.primaryAxis);
+    expect(gap?.evidenceForceReview.warrantedClaim).toBeTruthy();
+    expect(gap?.evidenceForceReview.warrantedClaim).not.toBe(gap?.claim);
+    expect(gap?.evidenceForceReview.reviewNote).toMatch(/overstates|stronger|warrant/i);
+  });
+
+  it("keeps citation-force gaps in the release queue", () => {
+    const audit = demoSnapshot.answer?.groundingAudit;
+    const measuredGaps = audit!.claimAttributions.filter(
+      attribution => attribution.evidenceForceReview.status === "force_gap"
+    );
+
+    expect(measuredGaps.length).toBeGreaterThan(0);
+    expect(audit?.forceGapClaimCount).toBe(measuredGaps.length);
+    expect(audit?.releaseGate.autoSendAllowed).toBe(false);
+    expect(audit?.releaseGate.blockers.join(" ")).toMatch(/FINRA|rewrite|extension/i);
   });
 
   it("tracks stale citations separately from changed source documents", () => {
