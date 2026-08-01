@@ -187,6 +187,22 @@ export default function Home() {
               <p className="mt-2 text-xs leading-5 text-amber-800">{demoAnswer.groundingAudit.reviewNote}</p>
               <div className="mt-2 rounded-xl border border-amber-200 bg-white/60 p-2">
                 <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone="amber">Selective abstention</Badge>
+                  <span className="text-xs font-semibold text-amber-800">
+                    Context {demoAnswer.groundingAudit.contextSufficiencyReview.status}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-amber-800">
+                  {demoAnswer.groundingAudit.contextSufficiencyReview.reviewNote}
+                </p>
+                <ul className="mt-2 list-disc space-y-1 pl-4 text-xs leading-5 text-amber-800">
+                  {demoAnswer.groundingAudit.contextSufficiencyReview.missingEvidence.map(item => (
+                    <li key={item}>Missing: {item}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mt-2 rounded-xl border border-amber-200 bg-white/60 p-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge tone={demoAnswer.groundingAudit.releaseGate.autoSendAllowed ? "green" : "amber"}>
                     {demoAnswer.groundingAudit.releaseGate.autoSendAllowed ? "Auto-send allowed" : "Auto-send paused"}
                   </Badge>

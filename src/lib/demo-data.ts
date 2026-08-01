@@ -470,6 +470,13 @@ export const demoAnswer: RagAnswer = {
     staleCitationCount: 0,
     reviewRequired: true,
     reviewNote: "Auto-send is paused for an over-strong FINRA extension claim and missing current ISO guidance; calibrate the wording and attach a direct citation to revision 6.",
+    contextSufficiencyReview: {
+      status: "insufficient",
+      checkedBeforeGeneration: true,
+      responseMode: "selective_abstention",
+      missingEvidence: ["Current ISO 27001 scope revision 6, Appendix B retention schedule"],
+      reviewNote: "Retrieved context supports the PII, vendor, and HR portions, but it is incomplete for ISO-specific retention guidance, so that portion is withheld."
+    },
     releaseGate: {
       status: "review_required",
       autoSendAllowed: false,

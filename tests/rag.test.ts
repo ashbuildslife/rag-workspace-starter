@@ -401,6 +401,36 @@ describe("answer grounding audit", () => {
     expect(audit?.releaseGate.blockers.join(" ")).toMatch(/FINRA|rewrite|extension/i);
   });
 
+  it("checks whether retrieved context is sufficient before generation", () => {
+    const review = demoSnapshot.answer?.groundingAudit.contextSufficiencyReview;
+
+    expect(review?.checkedBeforeGeneration).toBe(true);
+    expect(review?.status).toBe("insufficient");
+    expect(review?.missingEvidence).toContain("Current ISO 27001 scope revision 6, Appendix B retention schedule");
+    expect(review?.reviewNote).toMatch(/incomplete|withheld/i);
+  });
+
+  it("uses selective abstention when only part of the query is supported", () => {
+    const answer = demoSnapshot.answer;
+    const review = answer?.groundingAudit.contextSufficiencyReview;
+
+    expect(review?.responseMode).toBe("selective_abstention");
+    expect(answer?.groundingAudit.releaseGate.autoSendAllowed).toBe(false);
+    expect(answer?.answer).toMatch(/ISO-specific guidance is withheld/i);
+  });
+
+  it("routes each missing context item into the release queue", () => {
+    const audit = demoSnapshot.answer?.groundingAudit;
+    const missingEvidence = audit?.contextSufficiencyReview.missingEvidence ?? [];
+
+    expect(missingEvidence.length).toBeGreaterThan(0);
+    for (const missing of missingEvidence) {
+      const keyTerms = missing.match(/ISO|revision 6|Appendix B/gi) ?? [];
+      expect(keyTerms.length).toBeGreaterThan(0);
+      expect(audit?.releaseGate.blockers.join(" ")).toMatch(/ISO|revision 6|Appendix B/i);
+    }
+  });
+
   it("tracks stale citations separately from changed source documents", () => {
     const citations = demoSnapshot.answer?.citations ?? [];
     const citedDocumentNames = new Set(citations.map(citation => citation.documentName));

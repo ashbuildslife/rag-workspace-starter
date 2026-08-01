@@ -137,9 +137,21 @@ export interface AnswerReleaseGate {
   blockers: string[];
 }
 
+export type ContextSufficiencyStatus = "sufficient" | "insufficient";
+export type ContextResponseMode = "answer" | "selective_abstention";
+
+export interface ContextSufficiencyReview {
+  status: ContextSufficiencyStatus;
+  checkedBeforeGeneration: boolean;
+  responseMode: ContextResponseMode;
+  missingEvidence: string[];
+  reviewNote: string;
+}
+
 export interface GroundingAudit {
   totalClaims: number; citedClaims: number; unsupportedClaimCount: number; forceGapClaimCount: number;
   staleCitationCount: number; reviewRequired: boolean; reviewNote: string;
+  contextSufficiencyReview: ContextSufficiencyReview;
   releaseGate: AnswerReleaseGate;
   claimAttributions: ClaimAttribution[];
 }
