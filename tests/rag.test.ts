@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { demoSnapshot, demoParserResults, demoSearchHistory, demoDocuments } from "@/lib/demo-data";
+import { demoSnapshot, demoParserResults, demoSearchHistory, demoDocuments, demoGoldenEvalSuite } from "@/lib/demo-data";
 
 describe("search results", () => {
   it("has results from multiple methods", () => {
@@ -523,5 +523,71 @@ describe("document freshness", () => {
     expect(outOfSync).toBeDefined();
     expect(outOfSync!.parseQuality).toBeGreaterThan(0);
     expect(outOfSync!.chunksCreated).toBeGreaterThan(0);
+  });
+});
+
+describe("golden evaluation set", () => {
+  it("keeps suite counts consistent with the question list", () => {
+    const suite = demoGoldenEvalSuite;
+    expect(suite.questions).toHaveLength(suite.totalQuestions);
+    expect(suite.passingCount + suite.failingCount).toBe(suite.totalQuestions);
+    expect(suite.questions.filter(q => q.lastRunStatus === "passing")).toHaveLength(suite.passingCount);
+    expect(suite.questions.filter(q => q.lastRunStatus === "failing")).toHaveLength(suite.failingCount);
+  });
+
+  it("gives every question a ground truth, expected source, and owner", () => {
+    for (const question of demoGoldenEvalSuite.questions) {
+      expect(question.question.length).toBeGreaterThan(16);
+      expect(question.groundTruth.length).toBeGreaterThan(24);
+      expect(question.expectedSourceDocumentName.length).toBeGreaterThan(4);
+      expect(question.owner).toBeTruthy();
+      expect(question.lastRunNote.length).toBeGreaterThan(32);
+      if (question.lastRunStatus === "passing") {
+        expect(question.failureClass).toBe("none");
+      } else {
+        expect(question.failureClass).not.toBe("none");
+      }
+    }
+  });
+
+  it("covers the conflicting-or-stale category most golden sets skip", () => {
+    const staleConflict = demoGoldenEvalSuite.questions.filter(q => q.category === "conflicting_or_stale");
+    expect(staleConflict.length).toBeGreaterThanOrEqual(1);
+    for (const question of staleConflict) {
+      expect(question.groundTruth).toMatch(/conflict|superseded|stale|held out/i);
+    }
+  });
+
+  it("distinguishes retrieval failure from generation failure", () => {
+    const failing = demoGoldenEvalSuite.questions.filter(q => q.lastRunStatus === "failing");
+    expect(failing.length).toBeGreaterThan(0);
+
+    const retrievalFailures = failing.filter(q => q.failureClass === "retrieval_failure");
+    expect(retrievalFailures.length).toBeGreaterThan(0);
+
+    for (const question of retrievalFailures) {
+      // Retrieval failure means the expected source is not available as a ready, ingested document.
+      const expectedDoc = demoDocuments.find(d => d.name === question.expectedSourceDocumentName);
+      expect(expectedDoc).toBeUndefined();
+      expect(question.expectedBehavior).toBe("abstain");
+      expect(question.lastRunNote).toMatch(/retrieval failure/i);
+      // The closest indexed document is version-blocked, so the retriever cannot supply the chunk.
+      const blockedVersionHold = demoSnapshot.searchResults.find(
+        r => r.documentName.startsWith("ISO 27001") && r.versionReview.answerUse === "blocked"
+      );
+      expect(blockedVersionHold).toBeDefined();
+    }
+  });
+
+  it("keeps unsafe-content questions gated on blocking behavior", () => {
+    const unsafe = demoGoldenEvalSuite.questions.filter(q => q.category === "unsafe_content");
+    expect(unsafe.length).toBeGreaterThanOrEqual(1);
+    for (const question of unsafe) {
+      expect(question.expectedBehavior).toBe("block");
+      const blockedChunk = demoSnapshot.searchResults.find(
+        r => r.documentName === question.expectedSourceDocumentName && r.safetyReview.status === "blocked"
+      );
+      expect(blockedChunk).toBeDefined();
+    }
   });
 });

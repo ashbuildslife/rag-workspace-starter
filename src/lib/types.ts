@@ -183,6 +183,37 @@ export interface ParserResult {
   parser: string; quality: number; textSample: string; chunks: number; errors: number;
 }
 
+export type GoldenEvalCategory = "single_fact" | "multi_document" | "conflicting_or_stale" | "unsafe_content" | "insufficient_context";
+export type GoldenEvalExpectedBehavior = "answer" | "abstain" | "block";
+export type GoldenEvalFailureClass = "none" | "retrieval_failure" | "generation_failure";
+export type GoldenEvalRunStatus = "passing" | "failing";
+
+export interface GoldenEvalQuestion {
+  id: string;
+  question: string;
+  /** Known-correct answer written by a domain owner — the baseline every run is scored against. */
+  groundTruth: string;
+  /** Document that must be retrieved for a correct answer. This field is what separates a
+   *  retrieval failure (wrong chunk fetched) from a generation failure (right chunk, wrong answer). */
+  expectedSourceDocumentName: string;
+  category: GoldenEvalCategory;
+  expectedBehavior: GoldenEvalExpectedBehavior;
+  lastRunStatus: GoldenEvalRunStatus;
+  failureClass: GoldenEvalFailureClass;
+  lastRunNote: string;
+  owner: string;
+}
+
+export interface GoldenEvalSuite {
+  totalQuestions: number;
+  passingCount: number;
+  failingCount: number;
+  lastRunAt: string;
+  /** Corpus-churn percentage that should trigger re-embedding plus a full suite re-run. */
+  reembedCorpusChurnThresholdPct: number;
+  questions: GoldenEvalQuestion[];
+}
+
 export interface RagSnapshot {
   workspace: Workspace;
   members: WorkspaceMember[];
@@ -192,4 +223,5 @@ export interface RagSnapshot {
   searchHistory: SearchHistoryEntry[];
   ingestionStatus: IngestionStatus;
   parserResults: ParserResult[];
+  goldenEvalSuite: GoldenEvalSuite;
 }

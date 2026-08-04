@@ -1,6 +1,7 @@
 import {
   demoAnswer,
   demoDocuments,
+  demoGoldenEvalSuite,
   demoIngestionStatus,
   demoMembers,
   demoParserResults,
@@ -371,6 +372,45 @@ export default function Home() {
           </div>
         </Card>
       </div>
+
+      {/* GOLDEN EVALUATION SET */}
+      <Card>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold text-slate-950">Golden Evaluation Set</h2>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              Regression questions with known answers and expected source documents, re-run on every retrieval change.
+              The expected-source field separates retrieval failures (wrong chunk fetched) from generation failures (right chunk, wrong answer).
+              Re-embed and re-run when corpus churn exceeds {demoGoldenEvalSuite.reembedCorpusChurnThresholdPct}%.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge tone="green">{demoGoldenEvalSuite.passingCount} passing</Badge>
+            <Badge tone={demoGoldenEvalSuite.failingCount > 0 ? "red" : "green"}>{demoGoldenEvalSuite.failingCount} failing</Badge>
+            <span className="text-xs text-slate-400">Last run {new Date(demoGoldenEvalSuite.lastRunAt).toLocaleString()}</span>
+          </div>
+        </div>
+        <div className="mt-4 space-y-3">
+          {demoGoldenEvalSuite.questions.map(q => (
+            <div key={q.id} className={`rounded-2xl border p-4 ${q.lastRunStatus === "passing" ? "border-emerald-100 bg-emerald-50/20" : "border-red-200 bg-red-50/30"}`}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone={q.lastRunStatus === "passing" ? "green" : "red"}>{q.lastRunStatus}</Badge>
+                  <Badge tone="slate">{q.category.replaceAll("_", " ")}</Badge>
+                  <Badge tone={q.expectedBehavior === "answer" ? "indigo" : "amber"}>expects {q.expectedBehavior}</Badge>
+                  {q.failureClass !== "none" && <Badge tone="red">{q.failureClass.replaceAll("_", " ")}</Badge>}
+                </div>
+                <span className="text-xs text-slate-400">{q.owner}</span>
+              </div>
+              <p className="mt-2 text-sm font-semibold text-slate-800">{q.question}</p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">Ground truth: {q.groundTruth}</p>
+              <p className="mt-1 text-xs leading-5 text-slate-400">
+                Expected source: {q.expectedSourceDocumentName} · {q.lastRunNote}
+              </p>
+            </div>
+          ))}
+        </div>
+      </Card>
     </main>
   );
 }
