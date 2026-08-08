@@ -161,10 +161,22 @@ export interface RagAnswer {
   groundingAudit: GroundingAudit;
 }
 
+export type CitationSourceTextStatus = "verified" | "mismatch_detected" | "unverified";
+
+export interface CitationSourceTextVerification {
+  status: CitationSourceTextStatus;
+  sourceChunkFullText: string | null;
+  excerptFoundInSource: boolean;
+  mismatchDetails: string | null;
+  reviewedBeforeRelease: boolean;
+  reviewerAction: string;
+}
+
 export interface Citation {
   sourceChunkId: string; documentName: string; chunkPosition: number; excerpt: string; score: number;
   coverage: "direct" | "supporting";
   verificationNote: string;
+  sourceTextVerification: CitationSourceTextVerification;
 }
 
 export interface SearchHistoryEntry {

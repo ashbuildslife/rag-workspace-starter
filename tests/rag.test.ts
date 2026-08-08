@@ -591,3 +591,51 @@ describe("golden evaluation set", () => {
     }
   });
 });
+
+describe("citation source text verification", () => {
+  it("records source-text verification status for every citation", () => {
+    const citations = demoSnapshot.answer?.citations ?? [];
+    expect(citations.length).toBeGreaterThan(0);
+    
+    for (const citation of citations) {
+      expect(citation.sourceTextVerification).toBeDefined();
+      expect(citation.sourceTextVerification.status).toMatch(/verified|mismatch_detected|unverified/);
+      expect(citation.sourceTextVerification.reviewedBeforeRelease).toBe(true);
+      expect(citation.sourceTextVerification.reviewerAction.length).toBeGreaterThan(16);
+    }
+  });
+
+  it("detects mismatches between cited excerpt and source chunk", () => {
+    const citations = demoSnapshot.answer?.citations ?? [];
+    const mismatches = citations.filter(c => c.sourceTextVerification.status === "mismatch_detected");
+    
+    expect(mismatches.length).toBeGreaterThanOrEqual(1);
+    for (const citation of mismatches) {
+      expect(citation.sourceTextVerification.excerptFoundInSource).toBe(false);
+      expect(citation.sourceTextVerification.mismatchDetails).toBeTruthy();
+      expect(citation.sourceTextVerification.mismatchDetails?.length).toBeGreaterThan(24);
+    }
+  });
+
+  it("allows only verified citations in direct coverage", () => {
+    const directCitations = demoSnapshot.answer?.citations.filter(c => c.coverage === "direct") ?? [];
+    expect(directCitations.length).toBeGreaterThan(0);
+    
+    for (const citation of directCitations) {
+      expect(citation.sourceTextVerification.status).toBe("verified");
+      expect(citation.sourceTextVerification.excerptFoundInSource).toBe(true);
+    }
+  });
+
+  it("blocks mismatched citations from release", () => {
+    const mismatches = demoSnapshot.answer?.citations.filter(
+      c => c.sourceTextVerification.status === "mismatch_detected"
+    ) ?? [];
+    
+    expect(mismatches.length).toBeGreaterThanOrEqual(1);
+    
+    const audit = demoSnapshot.answer?.groundingAudit;
+    expect(audit?.releaseGate.status).toBe("review_required");
+    expect(audit?.releaseGate.blockers.some(b => b.match(/citation|excerpt|source text|mismatch/i))).toBe(true);
+  });
+});
