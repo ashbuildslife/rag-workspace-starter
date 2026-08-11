@@ -639,3 +639,46 @@ describe("citation source text verification", () => {
     expect(audit?.releaseGate.blockers.some(b => b.match(/citation|excerpt|source text|mismatch/i))).toBe(true);
   });
 });
+
+describe("jurisdiction-scope retrieval gating", () => {
+  it("blocks jurisdiction-mismatched retrievals from answer use", () => {
+    const jurisdictionBlocked = demoSnapshot.searchResults.filter(
+      r => r.sourceAuthorityReview.answerUse === "blocked" &&
+        r.sourceAuthorityReview.reviewNote.match(/jurisdiction/i)
+    );
+    expect(jurisdictionBlocked.length).toBeGreaterThanOrEqual(1);
+
+    for (const result of jurisdictionBlocked) {
+      expect(result.sourceAuthorityReview.level).not.toBe("unverified");
+      expect(result.confidence).not.toBe("low");
+      expect(result.authorizationReview.status).toBe("authorized");
+    }
+  });
+
+  it("keeps jurisdiction-blocked retrievals out of generated citations", () => {
+    const jurisdictionBlocked = demoSnapshot.searchResults.filter(
+      r => r.sourceAuthorityReview.answerUse === "blocked" &&
+        r.sourceAuthorityReview.reviewNote.match(/jurisdiction/i)
+    );
+    const citations = demoSnapshot.answer?.citations ?? [];
+    expect(jurisdictionBlocked.length).toBeGreaterThan(0);
+
+    for (const result of jurisdictionBlocked) {
+      expect(citations.some(citation => citation.documentName === result.documentName)).toBe(false);
+    }
+  });
+
+  it("does not conflate jurisdiction blocking with safety or authorization denial", () => {
+    const jurisdictionBlocked = demoSnapshot.searchResults.find(
+      r => r.sourceAuthorityReview.answerUse === "blocked" &&
+        r.sourceAuthorityReview.reviewNote.match(/jurisdiction/i)
+    );
+    expect(jurisdictionBlocked).toBeDefined();
+    expect(jurisdictionBlocked!.safetyReview.status).toBe("allowed");
+    expect(jurisdictionBlocked!.authorizationReview.status).toBe("authorized");
+    expect(jurisdictionBlocked!.versionReview.answerUse).toBe("allowed");
+    expect(jurisdictionBlocked!.deduplicationReview.answerUse).toBe("allowed");
+    expect(jurisdictionBlocked!.conflictReview.answerUse).toBe("allowed");
+    expect(jurisdictionBlocked!.sourceAuthorityReview.answerUse).toBe("blocked");
+  });
+});

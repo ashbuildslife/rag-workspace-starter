@@ -450,6 +450,56 @@ const mockSearchResults: SearchResult[] = [
       indexedAclVersion: "vendor-upload-acl-v2",
       reviewNote: "Untrusted vendor upload is denied before model context because it requests external data exfiltration."
     }
+  },
+  {
+    chunkId: "c_440",
+    documentName: "EU Vendor GDPR Compliance Guide.pdf",
+    chunkText: "Under Article 17 GDPR, data subjects have the right to request erasure of personal data ('right to be forgotten') when the data is no longer necessary for the purpose collected, consent is withdrawn, or processing was unlawful. Controllers must respond without undue delay and within one month.",
+    score: 0.72,
+    confidence: "medium",
+    method: "vector",
+    safetyReview: {
+      status: "allowed",
+      risk: "none",
+      externalTarget: null,
+      reviewNote: "No embedded instructions or external-target requests detected."
+    },
+    sourceAuthorityReview: {
+      level: "approved_reference",
+      answerUse: "blocked",
+      owner: "Privacy Enablement",
+      sourceSystem: "Policy intranet",
+      checkedBeforeModel: true,
+      reviewNote: "The GDPR guide is an approved reference for EU operations but does not control a California-focused retention query; blocked from answer use on jurisdiction grounds."
+    },
+    versionReview: {
+      status: "current",
+      indexedVersionId: "gdpr-compliance-guide-v1",
+      currentVersionId: "gdpr-compliance-guide-v1",
+      supersededBy: null,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The indexed guide matches the current version; jurisdiction mismatch is handled by source-authority review, not version exclusion."
+    },
+    deduplicationReview: {
+      status: "canonical",
+      duplicateType: "none",
+      contentFingerprint: "sha256:a1c2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2",
+      canonicalChunkId: "c_440",
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "Unique fingerprint registered; jurisdiction-based exclusion is handled by source-authority review, not deduplication."
+    },
+    conflictReview: { ...noRetrievalConflict },
+    authorizationReview: {
+      status: "authorized",
+      allowedAudiences: ["compliance", "legal"],
+      checkedBeforeModel: true,
+      permissionSnapshotStatus: "current",
+      sourceAclVersion: "gdpr-guide-acl-v3",
+      indexedAclVersion: "gdpr-guide-acl-v3",
+      reviewNote: "The GDPR guide is audience-authorized, but audience authorization does not override the separate jurisdiction-scope hold."
+    }
   }
 ];
 
