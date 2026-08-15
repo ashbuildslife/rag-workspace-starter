@@ -682,3 +682,44 @@ describe("jurisdiction-scope retrieval gating", () => {
     expect(jurisdictionBlocked!.sourceAuthorityReview.answerUse).toBe("blocked");
   });
 });
+
+describe("retrieval relevance review", () => {
+  it("checks every retrieval for topical relevance before model context assembly", () => {
+    for (const result of demoSnapshot.searchResults) {
+      expect(result.relevanceReview.checkedBeforeModel).toBe(true);
+      expect(["relevant", "off_topic"]).toContain(result.relevanceReview.status);
+      expect(result.relevanceReview.reviewNote.length).toBeGreaterThan(32);
+    }
+  });
+
+  it("blocks off-topic retrievals even when every other gate passes", () => {
+    const offTopic = demoSnapshot.searchResults.filter(
+      result => result.relevanceReview.status === "off_topic"
+    );
+    expect(offTopic.length).toBeGreaterThanOrEqual(1);
+
+    for (const result of offTopic) {
+      expect(result.relevanceReview.answerUse).toBe("blocked");
+      expect(result.safetyReview.status).toBe("allowed");
+      expect(result.authorizationReview.status).toBe("authorized");
+      expect(result.versionReview.answerUse).toBe("allowed");
+      expect(result.deduplicationReview.answerUse).toBe("allowed");
+      expect(result.conflictReview.answerUse).toBe("allowed");
+      expect(result.sourceAuthorityReview.answerUse).not.toBe("blocked");
+      expect(result.relevanceReview.reviewNote).toMatch(/off-topic|topical|keyword/i);
+    }
+  });
+
+  it("keeps off-topic retrievals out of generated citations", () => {
+    const offTopicDocs = new Set(
+      demoSnapshot.searchResults
+        .filter(result => result.relevanceReview.status === "off_topic")
+        .map(result => result.documentName)
+    );
+    expect(offTopicDocs.size).toBeGreaterThan(0);
+
+    for (const citation of demoSnapshot.answer?.citations ?? []) {
+      expect(offTopicDocs.has(citation.documentName)).toBe(false);
+    }
+  });
+});

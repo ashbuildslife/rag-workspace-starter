@@ -1,4 +1,4 @@
-import type { Document, GoldenEvalSuite, IngestionStatus, ParserResult, RagAnswer, RagSnapshot, RetrievalConflictReview, SearchHistoryEntry, SearchResult, Workspace, WorkspaceMember } from "./types";
+import type { Document, GoldenEvalSuite, IngestionStatus, ParserResult, RagAnswer, RagSnapshot, RetrievalConflictReview, RetrievalRelevanceReview, SearchHistoryEntry, SearchResult, Workspace, WorkspaceMember } from "./types";
 
 export const demoWorkspace: Workspace = {
   id: "ws_legal", name: "Legal & Compliance Knowledge Base", memberCount: 12, documentCount: 47, totalChunks: 1423
@@ -24,6 +24,13 @@ export const demoParserResults: ParserResult[] = [
   { parser: "pypdf-baseline", quality: 31, textSample: "Q2 2 0 2 6\nC o m p l i a n c e\nA u d i t\nR e p o r t\n\n(Table data lost — detected as image)...", chunks: 45, errors: 28 }
 ];
 
+const noRelevanceHold: RetrievalRelevanceReview = {
+  status: "relevant",
+  checkedBeforeModel: true,
+  answerUse: "allowed",
+  reviewNote: "Chunk text overlaps the PII data-retention topic; any remaining holds are evaluated by the separate safety, authority, version, deduplication, and conflict gates."
+};
+
 const noRetrievalConflict: RetrievalConflictReview = {
   status: "clear",
   topic: null,
@@ -48,6 +55,7 @@ const mockSearchResults: SearchResult[] = [
       externalTarget: null,
       reviewNote: "No embedded instructions or external-target requests detected."
     },
+    relevanceReview: { ...noRelevanceHold },
     sourceAuthorityReview: {
       level: "source_of_record",
       answerUse: "direct",
@@ -106,6 +114,7 @@ const mockSearchResults: SearchResult[] = [
       externalTarget: null,
       reviewNote: "No embedded instructions or external-target requests detected."
     },
+    relevanceReview: { ...noRelevanceHold },
     sourceAuthorityReview: {
       level: "source_of_record",
       answerUse: "direct",
@@ -156,6 +165,7 @@ const mockSearchResults: SearchResult[] = [
       externalTarget: null,
       reviewNote: "No embedded instructions or external-target requests detected."
     },
+    relevanceReview: { ...noRelevanceHold },
     sourceAuthorityReview: {
       level: "source_of_record",
       answerUse: "direct",
@@ -206,6 +216,7 @@ const mockSearchResults: SearchResult[] = [
       externalTarget: null,
       reviewNote: "No embedded instructions or external-target requests detected."
     },
+    relevanceReview: { ...noRelevanceHold },
     sourceAuthorityReview: {
       level: "approved_reference",
       answerUse: "supporting_only",
@@ -256,6 +267,7 @@ const mockSearchResults: SearchResult[] = [
       externalTarget: null,
       reviewNote: "No embedded instructions or external-target requests detected."
     },
+    relevanceReview: { ...noRelevanceHold },
     sourceAuthorityReview: {
       level: "approved_reference",
       answerUse: "supporting_only",
@@ -314,6 +326,7 @@ const mockSearchResults: SearchResult[] = [
       externalTarget: null,
       reviewNote: "No embedded instructions or external-target requests detected."
     },
+    relevanceReview: { ...noRelevanceHold },
     sourceAuthorityReview: {
       level: "approved_reference",
       answerUse: "supporting_only",
@@ -364,6 +377,7 @@ const mockSearchResults: SearchResult[] = [
       externalTarget: null,
       reviewNote: "Low-confidence table extraction must be re-parsed before it can support an answer."
     },
+    relevanceReview: { ...noRelevanceHold },
     sourceAuthorityReview: {
       level: "unverified",
       answerUse: "blocked",
@@ -414,6 +428,7 @@ const mockSearchResults: SearchResult[] = [
       externalTarget: "vendor-audit.example",
       reviewNote: "Untrusted retrieved text asks the assistant to send internal data to an external target; block it from answer context."
     },
+    relevanceReview: { ...noRelevanceHold },
     sourceAuthorityReview: {
       level: "unverified",
       answerUse: "blocked",
@@ -464,6 +479,7 @@ const mockSearchResults: SearchResult[] = [
       externalTarget: null,
       reviewNote: "No embedded instructions or external-target requests detected."
     },
+    relevanceReview: { ...noRelevanceHold },
     sourceAuthorityReview: {
       level: "approved_reference",
       answerUse: "blocked",
@@ -500,7 +516,63 @@ const mockSearchResults: SearchResult[] = [
       indexedAclVersion: "gdpr-guide-acl-v3",
       reviewNote: "The GDPR guide is audience-authorized, but audience authorization does not override the separate jurisdiction-scope hold."
     }
-  }
+  },
+  {
+    chunkId: "c_512",
+    documentName: "People Ops — Q3 Talent Retention Bonus Memo.pdf",
+    chunkText: "Q3 Retention Initiative: To reduce voluntary attrition, the People Committee approved a one-time retention bonus of $8,000 for senior engineers who remain through March 2027.",
+    score: 0.76,
+    confidence: "medium",
+    method: "bm25",
+    safetyReview: {
+      status: "allowed",
+      risk: "none",
+      externalTarget: null,
+      reviewNote: "No embedded instructions or external-target requests detected."
+    },
+    relevanceReview: {
+      status: "off_topic",
+      checkedBeforeModel: true,
+      answerUse: "blocked",
+      reviewNote: "Keyword overlap on 'retention' matched a talent-retention bonus memo, but the chunk is off-topic for a PII data-retention query; held out of model context so it cannot dilute the compliance answer."
+    },
+    sourceAuthorityReview: {
+      level: "approved_reference",
+      answerUse: "supporting_only",
+      owner: "People Operations",
+      sourceSystem: "HR policy portal",
+      checkedBeforeModel: true,
+      reviewNote: "Published HR memo is an approved reference for personnel matters but has no bearing on data-retention policy answers."
+    },
+    versionReview: {
+      status: "current",
+      indexedVersionId: "talent-retention-memo-v2",
+      currentVersionId: "talent-retention-memo-v2",
+      supersededBy: null,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The indexed memo matches the currently published People Ops version."
+    },
+    deduplicationReview: {
+      status: "canonical",
+      duplicateType: "none",
+      contentFingerprint: "sha256:9f2b8c1d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9",
+      canonicalChunkId: "c_512",
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "Byte-exact fingerprint registered; the relevance hold is evaluated separately from deduplication."
+    },
+    conflictReview: { ...noRetrievalConflict },
+    authorizationReview: {
+      status: "authorized",
+      allowedAudiences: ["hr", "compliance"],
+      checkedBeforeModel: true,
+      permissionSnapshotStatus: "current",
+      sourceAclVersion: "talent-memo-acl-v2",
+      indexedAclVersion: "talent-memo-acl-v2",
+      reviewNote: "HR memo access is authorized for HR/compliance audiences before model context assembly."
+    }
+  },
 ];
 
 export const demoAnswer: RagAnswer = {

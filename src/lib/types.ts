@@ -37,6 +37,8 @@ export type RetrievalDeduplicationAnswerUse = "allowed" | "blocked";
 export type RetrievalConflictStatus = "clear" | "conflict_detected";
 export type RetrievalConflictResolution = "not_needed" | "source_authority";
 export type RetrievalConflictAnswerUse = "allowed" | "blocked";
+export type RetrievalRelevanceStatus = "relevant" | "off_topic";
+export type RetrievalRelevanceAnswerUse = "allowed" | "blocked";
 
 export interface RetrievalConflictReview {
   status: RetrievalConflictStatus;
@@ -94,10 +96,18 @@ export interface RetrievalSafetyReview {
   reviewNote: string;
 }
 
+export interface RetrievalRelevanceReview {
+  status: RetrievalRelevanceStatus;
+  checkedBeforeModel: boolean;
+  answerUse: RetrievalRelevanceAnswerUse;
+  reviewNote: string;
+}
+
 export interface SearchResult {
   chunkId: string; documentName: string; chunkText: string; score: number;
   confidence: ConfidenceLevel; method: "vector" | "bm25" | "hybrid";
   safetyReview: RetrievalSafetyReview;
+  relevanceReview: RetrievalRelevanceReview;
   sourceAuthorityReview: RetrievalSourceAuthorityReview;
   versionReview: RetrievalVersionReview;
   deduplicationReview: RetrievalDeduplicationReview;

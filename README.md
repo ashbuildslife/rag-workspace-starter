@@ -45,6 +45,7 @@ The demo models a legal & compliance knowledge base with 47 documents, 1,423 chu
 
 - **Hybrid search**: Vector (semantic) and BM25 (keyword) results compared side-by-side. Each result shows which method found it, its relevance score, and a confidence badge
 - **Multi-parser pipeline**: Three parsers (docling-v2, mistral-ocr, pypdf-baseline) tried on each document. Side-by-side comparison with quality scores, chunk counts, and error counts. The best parser wins
+- **Pre-model relevance review**: Every retrieved chunk is checked for topical relevance before it enters model context. Keyword-only matches (for example a talent-retention memo surfacing in a data-retention query) are held out instead of diluting the answer
 - **Confidence-gated answers**: Every chunk gets a confidence level: high (≥0.8), medium (0.5–0.8), low (<0.5). The system refuses to answer from low-confidence sources
 - **Citation linking**: Every answer claim links back to a specific chunk position in a specific document with the relevance score. No hallucinated citations
 - **"Nothing relevant found" state**: When all chunks fall below threshold, the system says so instead of feeding garbage to the LLM
@@ -59,7 +60,7 @@ The demo models a legal & compliance knowledge base with 47 documents, 1,423 chu
 | Framework | Next.js App Router |
 | Language | TypeScript |
 | Styling | Tailwind CSS |
-| Testing | Vitest: 8 tests covering search results, parser comparison, ingestion status, and search history ordering |
+| Testing | Vitest: 67 tests covering search results, parser comparison, ingestion status, and search history ordering |
 | CI | GitHub Actions |
 | Data | TypeScript fixture data, no database, no embedding API required for demo |
 
@@ -67,7 +68,7 @@ The demo models a legal & compliance knowledge base with 47 documents, 1,423 chu
 
 ```
 src/app/page.tsx              ← Dashboard: hybrid search, parser comparison, citations, ingestion, history
-  → src/lib/demo-data.ts      ← Fixture data: 47 documents, 1,423 chunks, 5 search results, 3 parsers
+  → src/lib/demo-data.ts      ← Fixture data: 47 documents, 1,423 chunks, 10 search results, 3 parsers
   → src/lib/types.ts          ← Domain types: documents, chunks, search results, answers, citations
 ```
 
@@ -89,7 +90,7 @@ Open `http://localhost:3000`.
 ```bash
 npm run lint        # ESLint with zero warnings
 npm run typecheck   # TypeScript strict mode
-npm test            # Vitest. 8 tests
+npm test            # Vitest. 67 tests
 npm run build       # Production build
 ```
 
@@ -98,7 +99,7 @@ npm run build       # Production build
 All data is fictional and public-safe:
 
 - Legal & compliance workspace with 47 documents and 1,423 chunks
-- 5 search results across vector, BM25, and hybrid methods
+- 10 search results across vector, BM25, and hybrid methods
 - 3 parser comparisons showing quality from 31% to 96%
 - A generated answer with 3 citations back to source documents
 - 5 search history entries

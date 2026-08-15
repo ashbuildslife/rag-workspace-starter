@@ -47,6 +47,7 @@ export default function Home() {
   const suppressedDuplicates = results.filter(r => r.deduplicationReview.status === "suppressed_duplicate").length;
   const knowledgeConflictHolds = results.filter(r => r.conflictReview.answerUse === "blocked").length;
   const stalePermissionSnapshots = results.filter(r => r.authorizationReview.permissionSnapshotStatus === "stale").length;
+  const relevanceHolds = results.filter(r => r.relevanceReview.answerUse === "blocked").length;
   const parserWinner = demoParserResults.reduce((a, b) => a.quality > b.quality ? a : b);
 
   return (
@@ -82,7 +83,8 @@ export default function Home() {
             { label: "Version holds", value: sourceVersionHolds > 0 ? `${sourceVersionHolds} chunks` : "None" },
             { label: "Duplicates suppressed", value: suppressedDuplicates > 0 ? `${suppressedDuplicates} chunk` : "None" },
             { label: "Conflict holds", value: knowledgeConflictHolds > 0 ? `${knowledgeConflictHolds} chunk` : "None" },
-            { label: "Stale ACLs", value: stalePermissionSnapshots > 0 ? `${stalePermissionSnapshots} chunk` : "None" }
+            { label: "Stale ACLs", value: stalePermissionSnapshots > 0 ? `${stalePermissionSnapshots} chunk` : "None" },
+            { label: "Relevance holds", value: relevanceHolds > 0 ? `${relevanceHolds} chunk` : "None" }
           ].map(s => (
             <div key={s.label} className="rounded-2xl bg-slate-950 p-4 text-white">
               <p className="text-sm text-slate-300">{s.label}</p>
@@ -97,7 +99,7 @@ export default function Home() {
         <Card>
           <h2 className="text-xl font-bold text-slate-950">Hybrid Search Results</h2>
           <p className="mt-1 text-sm leading-6 text-slate-600">
-            Vector (semantic) and BM25 (keyword) results compared. Each result shows method, confidence, source authority, source version, duplicate suppression, evidence-conflict resolution, retrieval safety, and pre-model authorization review.
+            Vector (semantic) and BM25 (keyword) results compared. Each result shows method, confidence, topical relevance, source authority, source version, duplicate suppression, evidence-conflict resolution, retrieval safety, and pre-model authorization review.
           </p>
           <div className="mt-4 space-y-3">
             {results.map(r => (
@@ -107,6 +109,9 @@ export default function Home() {
                     <span className="text-xs font-semibold uppercase px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">{r.method.toUpperCase()}</span>
                     <Badge tone={r.safetyReview.status === "allowed" ? "green" : r.safetyReview.status === "blocked" ? "red" : "amber"}>
                       {r.safetyReview.status.replace("_", " ")}
+                    </Badge>
+                    <Badge tone={r.relevanceReview.status === "relevant" ? "green" : "red"}>
+                      {r.relevanceReview.status.replaceAll("_", " ")}
                     </Badge>
                     <Badge tone={r.authorizationReview.status === "authorized" ? "green" : r.authorizationReview.status === "denied" ? "red" : "amber"}>
                       {r.authorizationReview.status.replace("_", " ")}
@@ -138,6 +143,11 @@ export default function Home() {
                 {r.safetyReview.status !== "allowed" && (
                   <p className={`mt-2 text-xs font-semibold ${r.safetyReview.status === "blocked" ? "text-red-600" : "text-amber-700"}`}>
                     Retrieval safety: {r.safetyReview.reviewNote}{r.safetyReview.externalTarget != null ? ` External target: ${r.safetyReview.externalTarget}.` : ""}
+                  </p>
+                )}
+                {r.relevanceReview.answerUse === "blocked" && (
+                  <p className="mt-2 text-xs font-semibold text-red-600">
+                    Relevance gate: {r.relevanceReview.reviewNote}
                   </p>
                 )}
                 {r.sourceAuthorityReview.answerUse !== "direct" && (
