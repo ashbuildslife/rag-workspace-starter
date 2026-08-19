@@ -573,6 +573,57 @@ const mockSearchResults: SearchResult[] = [
       reviewNote: "HR memo access is authorized for HR/compliance audiences before model context assembly."
     }
   },
+  {
+    chunkId: "c_188",
+    documentName: "Data Retention Matrix — Corporate Records Schedule.xlsx",
+    chunkText: "Data Retention Matrix v7 (People Operations). Corporate retention schedule for employee and customer records: customer PII — 7 years from last business interaction unless a regulation extends it; payroll records — 7 years; performance reviews — 3 years post-employment; recruitment records for unsuccessful candidates — 12 months; benefits enrollment records — 6 years post-termination; security incident logs — 5 years; background-check consent forms — 3 years; expense reports — 10 years under tax-authority guidance.",
+    score: 0.79,
+    confidence: "medium",
+    method: "hybrid",
+    safetyReview: {
+      status: "allowed",
+      risk: "none",
+      externalTarget: null,
+      reviewNote: "No embedded instructions or external-target requests detected."
+    },
+    relevanceReview: { ...noRelevanceHold },
+    sourceAuthorityReview: {
+      level: "approved_reference",
+      answerUse: "supporting_only",
+      owner: "People Operations",
+      sourceSystem: "HR policy portal",
+      checkedBeforeModel: true,
+      reviewNote: "The published corporate retention matrix is approved HR reference material; it supports handbook schedule claims without replacing the compliance source of record."
+    },
+    versionReview: {
+      status: "current",
+      indexedVersionId: "retention-matrix-v7",
+      currentVersionId: "retention-matrix-v7",
+      supersededBy: null,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The indexed matrix matches the currently published People Operations version."
+    },
+    deduplicationReview: {
+      status: "canonical",
+      duplicateType: "none",
+      contentFingerprint: "sha256:91c80b17b286053d846e302421624c35023b4f3ffce4664fb55ab44fb233adbf",
+      canonicalChunkId: "c_188",
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "Byte-exact fingerprint registered; this canonical matrix chunk is selected once for model context."
+    },
+    conflictReview: { ...noRetrievalConflict },
+    authorizationReview: {
+      status: "authorized",
+      allowedAudiences: ["hr", "compliance"],
+      checkedBeforeModel: true,
+      permissionSnapshotStatus: "current",
+      sourceAclVersion: "matrix-acl-v7",
+      indexedAclVersion: "matrix-acl-v7",
+      reviewNote: "The retention matrix is available to HR/compliance audiences before model context assembly."
+    }
+  },
 ];
 
 export const demoAnswer: RagAnswer = {
@@ -591,7 +642,7 @@ export const demoAnswer: RagAnswer = {
     forceGapClaimCount: 1,
     staleCitationCount: 0,
     reviewRequired: true,
-    reviewNote: "Auto-send is paused for an over-strong FINRA extension claim and missing current ISO guidance; calibrate the wording and attach a direct citation to revision 6.",
+    reviewNote: "Auto-send is paused for an over-strong FINRA extension claim, missing current ISO guidance, and a Data Retention Matrix chunk held out of context by the assembly budget; calibrate the wording and attach a direct citation to revision 6.",
     contextSufficiencyReview: {
       status: "insufficient",
       checkedBeforeGeneration: true,
@@ -599,13 +650,27 @@ export const demoAnswer: RagAnswer = {
       missingEvidence: ["Current ISO 27001 scope revision 6, Appendix B retention schedule"],
       reviewNote: "Retrieved context supports the PII, vendor, and HR portions, but it is incomplete for ISO-specific retention guidance, so that portion is withheld."
     },
+    contextBudgetReview: {
+      status: "over_budget",
+      eligibleChunkCount: 4,
+      eligibleTokenCount: 228,
+      includedTokenCount: 140,
+      heldOutTokenCount: 88,
+      budgetTokens: 170,
+      includedChunkIds: ["c_042", "c_103", "c_301"],
+      heldOutChunkIds: ["c_188"],
+      checkedBeforeModel: true,
+      answerUse: "blocked",
+      reviewNote: "Four gate-cleared chunks (228 tokens) exceed the workspace's 170-token retrieval assembly budget. Top-ranked chunks were included in rank order and the Data Retention Matrix chunk was held out visibly instead of being silently truncated, so the model never saw it; trim the chunk or raise the reviewed budget, then regenerate."
+    },
     releaseGate: {
       status: "review_required",
       autoSendAllowed: false,
       requiredReviewerRole: "compliance_reviewer",
       blockers: [
         "The cited audit says regulatory requirements may extend retention; rewrite the FINRA clause without asserting that every broker-dealer record is extended.",
-        "ISO 27001 scope revision 5 is superseded; ingest revision 6 and attach the Appendix B citation before this answer can be sent externally."
+        "ISO 27001 scope revision 5 is superseded; ingest revision 6 and attach the Appendix B citation before this answer can be sent externally.",
+        "Context budget overflow: the Data Retention Matrix chunk was held out of model context under the 170-token assembly budget. Trim the chunk or raise the reviewed budget, then regenerate the HR schedule citation before release."
       ]
     },
     claimAttributions: [

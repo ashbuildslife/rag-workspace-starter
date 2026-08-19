@@ -317,8 +317,9 @@ describe("answer grounding audit", () => {
     expect(gate?.status).toBe("review_required");
     expect(gate?.autoSendAllowed).toBe(false);
     expect(gate?.requiredReviewerRole).toBe("compliance_reviewer");
-    expect(gate?.blockers).toHaveLength(audit!.unsupportedClaimCount + audit!.forceGapClaimCount);
-    expect(gate?.blockers.join(" ")).toMatch(/direct citation|Appendix B/i);
+    const budgetHolds = audit!.contextBudgetReview.status === "over_budget" ? 1 : 0;
+    expect(gate?.blockers).toHaveLength(audit!.unsupportedClaimCount + audit!.forceGapClaimCount + budgetHolds);
+    expect(gate?.blockers.join(" ")).toMatch(/direct citation|Appendix B|budget/i);
   });
 
   it("keeps the release gate aligned with human-review state", () => {
@@ -438,6 +439,71 @@ describe("answer grounding audit", () => {
       document => citedDocumentNames.has(document.name) && document.lastModifiedAt != null && document.lastModifiedAt > document.ingestedAt
     );
     expect(staleCitedDocuments.length).toBe(demoSnapshot.answer?.groundingAudit.staleCitationCount);
+  });
+});
+
+describe("context budget review", () => {
+  const review = demoSnapshot.answer?.groundingAudit.contextBudgetReview;
+
+  const eligibleChunks = demoSnapshot.searchResults.filter(result =>
+    result.safetyReview.status === "allowed" &&
+    result.relevanceReview.answerUse === "allowed" &&
+    result.sourceAuthorityReview.answerUse !== "blocked" &&
+    result.versionReview.answerUse === "allowed" &&
+    result.deduplicationReview.answerUse === "allowed" &&
+    result.conflictReview.answerUse === "allowed" &&
+    result.authorizationReview.status === "authorized"
+  );
+
+  it("checks the retrieval assembly budget before model context", () => {
+    expect(review?.checkedBeforeModel).toBe(true);
+    expect(review?.status).toBe("over_budget");
+    expect(review?.answerUse).toBe("blocked");
+    expect(review?.budgetTokens).toBeGreaterThan(0);
+    expect(review!.eligibleTokenCount).toBeGreaterThan(review!.budgetTokens);
+  });
+
+  it("accounts for every eligible chunk without silent truncation", () => {
+    const accounted = new Set([...(review?.includedChunkIds ?? []), ...(review?.heldOutChunkIds ?? [])]);
+    expect(review?.eligibleChunkCount).toBe(eligibleChunks.length);
+    expect((review?.includedChunkIds ?? []).length + (review?.heldOutChunkIds ?? []).length).toBe(review?.eligibleChunkCount);
+    expect((review?.includedTokenCount ?? 0) + (review?.heldOutTokenCount ?? 0)).toBe(review?.eligibleTokenCount);
+    expect(accounted).toEqual(new Set(eligibleChunks.map(result => result.chunkId)));
+  });
+
+  it("includes eligible chunks in rank order and holds out only the lowest-ranked", () => {
+    const ranked = [...eligibleChunks].sort((a, b) => b.score - a.score);
+    const includedCount = (review?.includedChunkIds ?? []).length;
+
+    expect(review?.includedChunkIds).toEqual(ranked.slice(0, includedCount).map(result => result.chunkId));
+    expect(review?.heldOutChunkIds).toEqual(ranked.slice(includedCount).map(result => result.chunkId));
+  });
+
+  it("holds out a chunk that passes every other pre-model gate", () => {
+    expect((review?.heldOutChunkIds ?? []).length).toBeGreaterThan(0);
+
+    for (const chunkId of review?.heldOutChunkIds ?? []) {
+      const chunk = demoSnapshot.searchResults.find(result => result.chunkId === chunkId);
+      expect(chunk).toBeDefined();
+      expect(chunk?.safetyReview.status).toBe("allowed");
+      expect(chunk?.relevanceReview.answerUse).toBe("allowed");
+      expect(chunk?.sourceAuthorityReview.answerUse).not.toBe("blocked");
+      expect(chunk?.versionReview.answerUse).toBe("allowed");
+      expect(chunk?.deduplicationReview.answerUse).toBe("allowed");
+      expect(chunk?.conflictReview.answerUse).toBe("allowed");
+      expect(chunk?.authorizationReview.status).toBe("authorized");
+    }
+  });
+
+  it("keeps budget-held chunks out of citations and in the release queue", () => {
+    const citations = demoSnapshot.answer?.citations ?? [];
+    for (const chunkId of review?.heldOutChunkIds ?? []) {
+      expect(citations.some(citation => citation.sourceChunkId === chunkId)).toBe(false);
+    }
+    expect(review?.reviewNote).toMatch(/held out|budget|truncat/i);
+    const gate = demoSnapshot.answer?.groundingAudit.releaseGate;
+    expect(gate?.autoSendAllowed).toBe(false);
+    expect(gate?.blockers.some(blocker => blocker.match(/budget|held out|context/i))).toBe(true);
   });
 });
 

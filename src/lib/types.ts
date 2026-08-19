@@ -158,10 +158,30 @@ export interface ContextSufficiencyReview {
   reviewNote: string;
 }
 
+export type ContextBudgetStatus = "within_budget" | "over_budget";
+export type ContextBudgetAnswerUse = "allowed" | "blocked";
+
+export interface ContextBudgetReview {
+  status: ContextBudgetStatus;
+  eligibleChunkCount: number;
+  eligibleTokenCount: number;
+  includedTokenCount: number;
+  heldOutTokenCount: number;
+  budgetTokens: number;
+  includedChunkIds: string[];
+  heldOutChunkIds: string[];
+  checkedBeforeModel: boolean;
+  /** Budget outcome for the held-out overflow set: "blocked" when the eligible set exceeds the
+   *  assembly budget and "allowed" when every eligible chunk fits. */
+  answerUse: ContextBudgetAnswerUse;
+  reviewNote: string;
+}
+
 export interface GroundingAudit {
   totalClaims: number; citedClaims: number; unsupportedClaimCount: number; forceGapClaimCount: number;
   staleCitationCount: number; reviewRequired: boolean; reviewNote: string;
   contextSufficiencyReview: ContextSufficiencyReview;
+  contextBudgetReview: ContextBudgetReview;
   releaseGate: AnswerReleaseGate;
   claimAttributions: ClaimAttribution[];
 }

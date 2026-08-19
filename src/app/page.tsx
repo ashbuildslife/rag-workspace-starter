@@ -48,6 +48,7 @@ export default function Home() {
   const knowledgeConflictHolds = results.filter(r => r.conflictReview.answerUse === "blocked").length;
   const stalePermissionSnapshots = results.filter(r => r.authorizationReview.permissionSnapshotStatus === "stale").length;
   const relevanceHolds = results.filter(r => r.relevanceReview.answerUse === "blocked").length;
+  const budgetHeldOutChunks = demoAnswer.groundingAudit.contextBudgetReview.heldOutChunkIds.length;
   const parserWinner = demoParserResults.reduce((a, b) => a.quality > b.quality ? a : b);
 
   return (
@@ -84,7 +85,8 @@ export default function Home() {
             { label: "Duplicates suppressed", value: suppressedDuplicates > 0 ? `${suppressedDuplicates} chunk` : "None" },
             { label: "Conflict holds", value: knowledgeConflictHolds > 0 ? `${knowledgeConflictHolds} chunk` : "None" },
             { label: "Stale ACLs", value: stalePermissionSnapshots > 0 ? `${stalePermissionSnapshots} chunk` : "None" },
-            { label: "Relevance holds", value: relevanceHolds > 0 ? `${relevanceHolds} chunk` : "None" }
+            { label: "Relevance holds", value: relevanceHolds > 0 ? `${relevanceHolds} chunk` : "None" },
+            { label: "Context budget holds", value: budgetHeldOutChunks > 0 ? `${budgetHeldOutChunks} chunk` : "None" }
           ].map(s => (
             <div key={s.label} className="rounded-2xl bg-slate-950 p-4 text-white">
               <p className="text-sm text-slate-300">{s.label}</p>
@@ -192,7 +194,7 @@ export default function Home() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone="amber">Human review required</Badge>
                 <span className="text-xs font-semibold text-amber-800">
-                  {demoAnswer.groundingAudit.unsupportedClaimCount} unsupported claim · {demoAnswer.groundingAudit.forceGapClaimCount} citation force gap · {demoAnswer.groundingAudit.staleCitationCount} stale citations
+                  {demoAnswer.groundingAudit.unsupportedClaimCount} unsupported claim · {demoAnswer.groundingAudit.forceGapClaimCount} citation force gap · {demoAnswer.groundingAudit.staleCitationCount} stale citations · {budgetHeldOutChunks} chunk held out of context
                 </span>
               </div>
               <p className="mt-2 text-xs leading-5 text-amber-800">{demoAnswer.groundingAudit.reviewNote}</p>
@@ -211,6 +213,19 @@ export default function Home() {
                     <li key={item}>Missing: {item}</li>
                   ))}
                 </ul>
+              </div>
+              <div className="mt-2 rounded-xl border border-amber-200 bg-white/60 p-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone={demoAnswer.groundingAudit.contextBudgetReview.status === "within_budget" ? "green" : "red"}>
+                    context budget {demoAnswer.groundingAudit.contextBudgetReview.status.replace("_", " ")}
+                  </Badge>
+                  <span className="text-xs font-semibold text-amber-800">
+                    {demoAnswer.groundingAudit.contextBudgetReview.includedTokenCount} / {demoAnswer.groundingAudit.contextBudgetReview.budgetTokens} tokens · {demoAnswer.groundingAudit.contextBudgetReview.heldOutChunkIds.length} eligible chunk held out
+                  </span>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-amber-800">
+                  {demoAnswer.groundingAudit.contextBudgetReview.reviewNote}
+                </p>
               </div>
               <div className="mt-2 rounded-xl border border-amber-200 bg-white/60 p-2">
                 <div className="flex flex-wrap items-center gap-2">
