@@ -48,6 +48,7 @@ export default function Home() {
   const knowledgeConflictHolds = results.filter(r => r.conflictReview.answerUse === "blocked").length;
   const stalePermissionSnapshots = results.filter(r => r.authorizationReview.permissionSnapshotStatus === "stale").length;
   const relevanceHolds = results.filter(r => r.relevanceReview.answerUse === "blocked").length;
+  const sourceLifecycleHolds = results.filter(r => r.sourceLifecycleReview.answerUse === "blocked").length;
   const budgetHeldOutChunks = demoAnswer.groundingAudit.contextBudgetReview.heldOutChunkIds.length;
   const parserWinner = demoParserResults.reduce((a, b) => a.quality > b.quality ? a : b);
 
@@ -65,7 +66,7 @@ export default function Home() {
           <h1 className="text-4xl font-black tracking-tight text-slate-950 md:text-6xl">RAG Workspace</h1>
           <p className="max-w-3xl text-lg leading-8 text-slate-600">
             Hybrid search across {demoWorkspace.totalChunks.toLocaleString()} chunks from 47 documents.
-            Vector + BM25 results compared side-by-side. Confidence-gated responses that refuse to answer when nothing relevant is found.
+            Vector + BM25 results compared side-by-side. Confidence-gated responses that refuse to answer when nothing relevant is found, with tombstone checks that block deleted source artifacts before model context assembly.
           </p>
           {/* Search bar */}
           <div className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-slate-400 text-sm">
@@ -86,6 +87,7 @@ export default function Home() {
             { label: "Conflict holds", value: knowledgeConflictHolds > 0 ? `${knowledgeConflictHolds} chunk` : "None" },
             { label: "Stale ACLs", value: stalePermissionSnapshots > 0 ? `${stalePermissionSnapshots} chunk` : "None" },
             { label: "Relevance holds", value: relevanceHolds > 0 ? `${relevanceHolds} chunk` : "None" },
+            { label: "Deletion holds", value: sourceLifecycleHolds > 0 ? `${sourceLifecycleHolds} chunk` : "None" },
             { label: "Context budget holds", value: budgetHeldOutChunks > 0 ? `${budgetHeldOutChunks} chunk` : "None" }
           ].map(s => (
             <div key={s.label} className="rounded-2xl bg-slate-950 p-4 text-white">
@@ -114,6 +116,9 @@ export default function Home() {
                     </Badge>
                     <Badge tone={r.relevanceReview.status === "relevant" ? "green" : "red"}>
                       {r.relevanceReview.status.replaceAll("_", " ")}
+                    </Badge>
+                    <Badge tone={r.sourceLifecycleReview.status === "active" ? "green" : "red"}>
+                      {r.sourceLifecycleReview.status.replaceAll("_", " ")}
                     </Badge>
                     <Badge tone={r.authorizationReview.status === "authorized" ? "green" : r.authorizationReview.status === "denied" ? "red" : "amber"}>
                       {r.authorizationReview.status.replace("_", " ")}
@@ -150,6 +155,11 @@ export default function Home() {
                 {r.relevanceReview.answerUse === "blocked" && (
                   <p className="mt-2 text-xs font-semibold text-red-600">
                     Relevance gate: {r.relevanceReview.reviewNote}
+                  </p>
+                )}
+                {r.sourceLifecycleReview.answerUse === "blocked" && (
+                  <p className="mt-2 text-xs font-semibold text-red-600">
+                    Lifecycle gate: {r.sourceLifecycleReview.reviewNote}{r.sourceLifecycleReview.tombstoneId != null ? ` Tombstone: ${r.sourceLifecycleReview.tombstoneId}.` : ""}
                   </p>
                 )}
                 {r.sourceAuthorityReview.answerUse !== "direct" && (

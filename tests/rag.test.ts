@@ -146,6 +146,53 @@ describe("retrieval source versioning", () => {
   });
 });
 
+describe("retrieval source lifecycle", () => {
+  it("checks every retrieval for source deletion state before model context assembly", () => {
+    for (const result of demoSnapshot.searchResults) {
+      expect(result.sourceLifecycleReview.checkedBeforeModel).toBe(true);
+      expect(result.sourceLifecycleReview.reviewNote.length).toBeGreaterThan(32);
+      if (result.sourceLifecycleReview.status === "active") {
+        expect(result.sourceLifecycleReview.tombstoneId).toBeNull();
+        expect(result.sourceLifecycleReview.answerUse).toBe("allowed");
+      } else {
+        expect(result.sourceLifecycleReview.tombstoneId).toMatch(/^tombstone:/);
+        expect(result.sourceLifecycleReview.answerUse).toBe("blocked");
+      }
+    }
+  });
+
+  it("blocks tombstoned source artifacts even when other retrieval gates pass", () => {
+    const tombstoned = demoSnapshot.searchResults.filter(
+      result => result.sourceLifecycleReview.status === "tombstoned"
+    );
+    expect(tombstoned.length).toBeGreaterThan(0);
+
+    for (const result of tombstoned) {
+      expect(result.sourceLifecycleReview.answerUse).toBe("blocked");
+      expect(result.safetyReview.status).toBe("allowed");
+      expect(result.relevanceReview.status).toBe("relevant");
+      expect(result.sourceAuthorityReview.answerUse).toBe("direct");
+      expect(result.versionReview.answerUse).toBe("allowed");
+      expect(result.deduplicationReview.answerUse).toBe("allowed");
+      expect(result.conflictReview.answerUse).toBe("allowed");
+      expect(result.authorizationReview.status).toBe("authorized");
+    }
+  });
+
+  it("keeps tombstoned chunks out of generated citations", () => {
+    const tombstonedChunkIds = new Set(
+      demoSnapshot.searchResults
+        .filter(result => result.sourceLifecycleReview.status === "tombstoned")
+        .map(result => result.chunkId)
+    );
+    expect(tombstonedChunkIds.size).toBeGreaterThan(0);
+
+    for (const citation of demoSnapshot.answer?.citations ?? []) {
+      expect(tombstonedChunkIds.has(citation.sourceChunkId)).toBe(false);
+    }
+  });
+});
+
 describe("retrieval deduplication", () => {
   it("fingerprints every retrieval before model context assembly", () => {
     for (const result of demoSnapshot.searchResults) {
@@ -448,6 +495,7 @@ describe("context budget review", () => {
   const eligibleChunks = demoSnapshot.searchResults.filter(result =>
     result.safetyReview.status === "allowed" &&
     result.relevanceReview.answerUse === "allowed" &&
+    result.sourceLifecycleReview.answerUse === "allowed" &&
     result.sourceAuthorityReview.answerUse !== "blocked" &&
     result.versionReview.answerUse === "allowed" &&
     result.deduplicationReview.answerUse === "allowed" &&
