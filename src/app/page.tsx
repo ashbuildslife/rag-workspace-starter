@@ -49,6 +49,7 @@ export default function Home() {
   const stalePermissionSnapshots = results.filter(r => r.authorizationReview.permissionSnapshotStatus === "stale").length;
   const relevanceHolds = results.filter(r => r.relevanceReview.answerUse === "blocked").length;
   const sourceLifecycleHolds = results.filter(r => r.sourceLifecycleReview.answerUse === "blocked").length;
+  const outputValidationHolds = demoAnswer.citations.filter(c => c.outputValidation.status !== "current").length;
   const budgetHeldOutChunks = demoAnswer.groundingAudit.contextBudgetReview.heldOutChunkIds.length;
   const parserWinner = demoParserResults.reduce((a, b) => a.quality > b.quality ? a : b);
 
@@ -88,7 +89,8 @@ export default function Home() {
             { label: "Stale ACLs", value: stalePermissionSnapshots > 0 ? `${stalePermissionSnapshots} chunk` : "None" },
             { label: "Relevance holds", value: relevanceHolds > 0 ? `${relevanceHolds} chunk` : "None" },
             { label: "Deletion holds", value: sourceLifecycleHolds > 0 ? `${sourceLifecycleHolds} chunk` : "None" },
-            { label: "Context budget holds", value: budgetHeldOutChunks > 0 ? `${budgetHeldOutChunks} chunk` : "None" }
+            { label: "Context budget holds", value: budgetHeldOutChunks > 0 ? `${budgetHeldOutChunks} chunk` : "None" },
+            { label: "Output revalidation", value: outputValidationHolds > 0 ? `${outputValidationHolds} citation` : "None" }
           ].map(s => (
             <div key={s.label} className="rounded-2xl bg-slate-950 p-4 text-white">
               <p className="text-sm text-slate-300">{s.label}</p>
@@ -204,7 +206,7 @@ export default function Home() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone="amber">Human review required</Badge>
                 <span className="text-xs font-semibold text-amber-800">
-                  {demoAnswer.groundingAudit.unsupportedClaimCount} unsupported claim · {demoAnswer.groundingAudit.forceGapClaimCount} citation force gap · {demoAnswer.groundingAudit.staleCitationCount} stale citations · {budgetHeldOutChunks} chunk held out of context
+                  {demoAnswer.groundingAudit.unsupportedClaimCount} unsupported claim · {demoAnswer.groundingAudit.forceGapClaimCount} citation force gap · {demoAnswer.groundingAudit.staleCitationCount} stale citations · {demoAnswer.groundingAudit.outputValidationHoldCount} output revalidation hold · {budgetHeldOutChunks} chunk held out of context
                 </span>
               </div>
               <p className="mt-2 text-xs leading-5 text-amber-800">{demoAnswer.groundingAudit.reviewNote}</p>
@@ -296,11 +298,13 @@ export default function Home() {
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs font-semibold text-indigo-700">{c.documentName}</span>
                       <Badge tone={c.coverage === "direct" ? "green" : "slate"}>{c.coverage}</Badge>
+                      <Badge tone={c.outputValidation.status === "current" ? "green" : "red"}>output {c.outputValidation.status.replaceAll("_", " ")}</Badge>
                     </div>
                     <span className="text-xs tabular-nums text-slate-400">chunk #{c.chunkPosition} · {c.score.toFixed(2)}</span>
                   </div>
                   <p className="mt-1 text-xs leading-5 text-slate-600">&ldquo;{c.excerpt}&rdquo;</p>
                   <p className="mt-2 text-xs leading-5 text-slate-500">{c.verificationNote}</p>
+                  <p className={`mt-2 text-xs leading-5 ${c.outputValidation.status === "current" ? "text-emerald-700" : "font-semibold text-red-700"}`}>Output revalidation: {c.outputValidation.reviewNote}</p>
                 </div>
               ))}
             </div>

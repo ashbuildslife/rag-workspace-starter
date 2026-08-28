@@ -365,7 +365,8 @@ describe("answer grounding audit", () => {
     expect(gate?.autoSendAllowed).toBe(false);
     expect(gate?.requiredReviewerRole).toBe("compliance_reviewer");
     const budgetHolds = audit!.contextBudgetReview.status === "over_budget" ? 1 : 0;
-    expect(gate?.blockers).toHaveLength(audit!.unsupportedClaimCount + audit!.forceGapClaimCount + budgetHolds);
+    const outputValidationHolds = audit!.outputValidationHoldCount;
+    expect(gate?.blockers).toHaveLength(audit!.unsupportedClaimCount + audit!.forceGapClaimCount + budgetHolds + outputValidationHolds);
     expect(gate?.blockers.join(" ")).toMatch(/direct citation|Appendix B|budget/i);
   });
 
@@ -477,6 +478,41 @@ describe("answer grounding audit", () => {
       expect(keyTerms.length).toBeGreaterThan(0);
       expect(audit?.releaseGate.blockers.join(" ")).toMatch(/ISO|revision 6|Appendix B/i);
     }
+  });
+
+  it("revalidates every citation against its current source before release", () => {
+    const citations = demoSnapshot.answer?.citations ?? [];
+    expect(citations.length).toBeGreaterThan(0);
+
+    for (const citation of citations) {
+      const validation = citation.outputValidation;
+      expect(validation.checkedBeforeRelease).toBe(true);
+      expect(Number.isNaN(Date.parse(validation.checkedAt))).toBe(false);
+      expect(validation.retrievedContentHash).toMatch(/^sha256:[a-f0-9]{64}$/);
+      expect(["current", "content_changed", "source_missing", "permission_revoked"]).toContain(validation.status);
+
+      if (validation.status === "current") {
+        expect(validation.currentContentHash).toBe(validation.retrievedContentHash);
+      } else {
+        expect(validation.reviewNote).toMatch(/changed|missing|permission|revalidat/i);
+        if (validation.status === "content_changed") {
+          expect(validation.currentContentHash).toMatch(/^sha256:[a-f0-9]{64}$/);
+          expect(validation.currentContentHash).not.toBe(validation.retrievedContentHash);
+        }
+      }
+    }
+  });
+
+  it("holds output-time source changes out of release", () => {
+    const changedCitations = (demoSnapshot.answer?.citations ?? []).filter(
+      citation => citation.outputValidation.status !== "current"
+    );
+    const audit = demoSnapshot.answer?.groundingAudit;
+
+    expect(changedCitations.length).toBe(audit?.outputValidationHoldCount);
+    expect(changedCitations.length).toBeGreaterThan(0);
+    expect(audit?.releaseGate.autoSendAllowed).toBe(false);
+    expect(audit?.releaseGate.blockers.some(blocker => blocker.match(/output-time|changed after retrieval|revalidat/i))).toBe(true);
   });
 
   it("tracks stale citations separately from changed source documents", () => {

@@ -190,7 +190,7 @@ export interface ContextBudgetReview {
 
 export interface GroundingAudit {
   totalClaims: number; citedClaims: number; unsupportedClaimCount: number; forceGapClaimCount: number;
-  staleCitationCount: number; reviewRequired: boolean; reviewNote: string;
+  staleCitationCount: number; outputValidationHoldCount: number; reviewRequired: boolean; reviewNote: string;
   contextSufficiencyReview: ContextSufficiencyReview;
   contextBudgetReview: ContextBudgetReview;
   releaseGate: AnswerReleaseGate;
@@ -213,11 +213,23 @@ export interface CitationSourceTextVerification {
   reviewerAction: string;
 }
 
+export type CitationOutputValidationStatus = "current" | "content_changed" | "source_missing" | "permission_revoked";
+
+export interface CitationOutputValidation {
+  status: CitationOutputValidationStatus;
+  checkedAt: string;
+  retrievedContentHash: string;
+  currentContentHash: string | null;
+  checkedBeforeRelease: boolean;
+  reviewNote: string;
+}
+
 export interface Citation {
   sourceChunkId: string; documentName: string; chunkPosition: number; excerpt: string; score: number;
   coverage: "direct" | "supporting";
   verificationNote: string;
   sourceTextVerification: CitationSourceTextVerification;
+  outputValidation: CitationOutputValidation;
 }
 
 export interface SearchHistoryEntry {
