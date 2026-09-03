@@ -81,6 +81,17 @@ export interface RetrievalSourceAuthorityReview {
   reviewNote: string;
 }
 
+export type RetrievalSourceReliabilityStatus = "corroborated" | "owner_attested" | "unverified";
+export type RetrievalSourceReliabilityAnswerUse = "allowed" | "blocked";
+
+export interface RetrievalSourceReliabilityReview {
+  status: RetrievalSourceReliabilityStatus;
+  independentSourceCount: number;
+  checkedBeforeModel: boolean;
+  answerUse: RetrievalSourceReliabilityAnswerUse;
+  reviewNote: string;
+}
+
 export interface RetrievalAuthorizationReview {
   status: RetrievalAuthorizationStatus;
   allowedAudiences: RetrievalAudience[];
@@ -120,6 +131,7 @@ export interface SearchResult {
   relevanceReview: RetrievalRelevanceReview;
   sourceLifecycleReview: RetrievalSourceLifecycleReview;
   sourceAuthorityReview: RetrievalSourceAuthorityReview;
+  sourceReliabilityReview: RetrievalSourceReliabilityReview;
   versionReview: RetrievalVersionReview;
   deduplicationReview: RetrievalDeduplicationReview;
   conflictReview: RetrievalConflictReview;

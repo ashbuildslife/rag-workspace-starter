@@ -49,6 +49,7 @@ export default function Home() {
   const stalePermissionSnapshots = results.filter(r => r.authorizationReview.permissionSnapshotStatus === "stale").length;
   const relevanceHolds = results.filter(r => r.relevanceReview.answerUse === "blocked").length;
   const sourceLifecycleHolds = results.filter(r => r.sourceLifecycleReview.answerUse === "blocked").length;
+  const sourceReliabilityReviews = results.filter(r => r.sourceReliabilityReview.status !== "corroborated").length;
   const outputValidationHolds = demoAnswer.citations.filter(c => c.outputValidation.status !== "current").length;
   const budgetHeldOutChunks = demoAnswer.groundingAudit.contextBudgetReview.heldOutChunkIds.length;
   const parserWinner = demoParserResults.reduce((a, b) => a.quality > b.quality ? a : b);
@@ -89,6 +90,7 @@ export default function Home() {
             { label: "Stale ACLs", value: stalePermissionSnapshots > 0 ? `${stalePermissionSnapshots} chunk` : "None" },
             { label: "Relevance holds", value: relevanceHolds > 0 ? `${relevanceHolds} chunk` : "None" },
             { label: "Deletion holds", value: sourceLifecycleHolds > 0 ? `${sourceLifecycleHolds} chunk` : "None" },
+            { label: "Reliability reviews", value: sourceReliabilityReviews > 0 ? `${sourceReliabilityReviews} chunks` : "None" },
             { label: "Context budget holds", value: budgetHeldOutChunks > 0 ? `${budgetHeldOutChunks} chunk` : "None" },
             { label: "Output revalidation", value: outputValidationHolds > 0 ? `${outputValidationHolds} citation` : "None" }
           ].map(s => (
@@ -105,7 +107,7 @@ export default function Home() {
         <Card>
           <h2 className="text-xl font-bold text-slate-950">Hybrid Search Results</h2>
           <p className="mt-1 text-sm leading-6 text-slate-600">
-            Vector (semantic) and BM25 (keyword) results compared. Each result shows method, confidence, topical relevance, source authority, source version, duplicate suppression, evidence-conflict resolution, retrieval safety, and pre-model authorization review.
+            Vector (semantic) and BM25 (keyword) results compared. Each result shows method, confidence, topical relevance, source authority, source reliability, source version, duplicate suppression, evidence-conflict resolution, retrieval safety, and pre-model authorization review.
           </p>
           <div className="mt-4 space-y-3">
             {results.map(r => (
@@ -127,6 +129,9 @@ export default function Home() {
                     </Badge>
                     <Badge tone={r.sourceAuthorityReview.answerUse === "direct" ? "green" : r.sourceAuthorityReview.answerUse === "blocked" ? "red" : "amber"}>
                       {r.sourceAuthorityReview.level.replaceAll("_", " ")}
+                    </Badge>
+                    <Badge tone={r.sourceReliabilityReview.status === "corroborated" ? "green" : r.sourceReliabilityReview.answerUse === "blocked" ? "red" : "amber"}>
+                      reliability {r.sourceReliabilityReview.status.replaceAll("_", " ")}
                     </Badge>
                     <Badge tone={r.versionReview.status === "current" ? "green" : "red"}>
                       {r.versionReview.status.replaceAll("_", " ")}
@@ -167,6 +172,11 @@ export default function Home() {
                 {r.sourceAuthorityReview.answerUse !== "direct" && (
                   <p className={`mt-2 text-xs font-semibold ${r.sourceAuthorityReview.answerUse === "blocked" ? "text-red-600" : "text-amber-700"}`}>
                     Source authority: {r.sourceAuthorityReview.reviewNote} Owner: {r.sourceAuthorityReview.owner} · {r.sourceAuthorityReview.sourceSystem}.
+                  </p>
+                )}
+                {r.sourceReliabilityReview.status !== "corroborated" && (
+                  <p className={`mt-2 text-xs font-semibold ${r.sourceReliabilityReview.answerUse === "blocked" ? "text-red-600" : "text-amber-700"}`}>
+                    Source reliability: {r.sourceReliabilityReview.reviewNote} Independent corroboration: {r.sourceReliabilityReview.independentSourceCount}.
                   </p>
                 )}
                 {r.versionReview.answerUse === "blocked" && (

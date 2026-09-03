@@ -81,6 +81,13 @@ const mockSearchResults: SearchResult[] = [
       checkedBeforeModel: true,
       reviewNote: "Approved audit record is authoritative for direct compliance answers."
     },
+    sourceReliabilityReview: {
+      status: "corroborated",
+      independentSourceCount: 1,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "Source-of-record retention guidance is corroborated by the current corporate retention matrix before model context assembly."
+    },
     versionReview: {
       status: "current",
       indexedVersionId: "audit-report-q2-2026-v1",
@@ -141,6 +148,13 @@ const mockSearchResults: SearchResult[] = [
       checkedBeforeModel: true,
       reviewNote: "Approved audit record is authoritative for direct compliance answers."
     },
+    sourceReliabilityReview: {
+      status: "corroborated",
+      independentSourceCount: 1,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The hybrid duplicate resolves to the same corroborated source; reliability is inherited before duplicate suppression."
+    },
     versionReview: {
       status: "current",
       indexedVersionId: "audit-report-q2-2026-v1",
@@ -192,6 +206,13 @@ const mockSearchResults: SearchResult[] = [
       sourceSystem: "Contract lifecycle system",
       checkedBeforeModel: true,
       reviewNote: "Executed agreement is the source of record for Vendor X obligations."
+    },
+    sourceReliabilityReview: {
+      status: "owner_attested",
+      independentSourceCount: 0,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The executed agreement is owner-attested in the contract lifecycle system; no independent corroborating source is required for its contractual obligation."
     },
     versionReview: {
       status: "current",
@@ -245,6 +266,13 @@ const mockSearchResults: SearchResult[] = [
       checkedBeforeModel: true,
       reviewNote: "Published handbook may support HR context but does not replace the compliance source of record."
     },
+    sourceReliabilityReview: {
+      status: "owner_attested",
+      independentSourceCount: 0,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The handbook is owner-attested by People Operations but is not independently corroborated for every schedule detail; treat supporting use cautiously."
+    },
     versionReview: {
       status: "current",
       indexedVersionId: "employee-handbook-v3.1",
@@ -296,6 +324,13 @@ const mockSearchResults: SearchResult[] = [
       sourceSystem: "Policy intranet",
       checkedBeforeModel: true,
       reviewNote: "The FAQ is approved guidance but does not override the compliance audit source of record."
+    },
+    sourceReliabilityReview: {
+      status: "owner_attested",
+      independentSourceCount: 0,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The privacy FAQ is owner-attested but conflicts with the compliance source of record; do not treat relevance as proof of reliability."
     },
     versionReview: {
       status: "current",
@@ -357,6 +392,13 @@ const mockSearchResults: SearchResult[] = [
       checkedBeforeModel: true,
       reviewNote: "Certification scope is approved reference material; retrieve the governing appendix for a direct answer."
     },
+    sourceReliabilityReview: {
+      status: "owner_attested",
+      independentSourceCount: 0,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The certification scope is owner-attested, but the indexed revision is not current; reliability cannot override version freshness."
+    },
     versionReview: {
       status: "superseded",
       indexedVersionId: "iso-scope-v5",
@@ -408,6 +450,13 @@ const mockSearchResults: SearchResult[] = [
       sourceSystem: "Spreadsheet upload queue",
       checkedBeforeModel: true,
       reviewNote: "Parse failure prevents authority verification, so this upload cannot support the answer."
+    },
+    sourceReliabilityReview: {
+      status: "unverified",
+      independentSourceCount: 0,
+      checkedBeforeModel: true,
+      answerUse: "blocked",
+      reviewNote: "The spreadsheet upload has no verified owner-backed evidence after parser failure; block it until the source is validated."
     },
     versionReview: {
       status: "unregistered",
@@ -461,6 +510,13 @@ const mockSearchResults: SearchResult[] = [
       checkedBeforeModel: true,
       reviewNote: "The policy register is authoritative, but its deletion tombstone independently blocks the retired retrieval artifact from model context."
     },
+    sourceReliabilityReview: {
+      status: "owner_attested",
+      independentSourceCount: 0,
+      checkedBeforeModel: true,
+      answerUse: "blocked",
+      reviewNote: "The policy register is authoritative, but the withdrawn artifact is not reliable answer evidence after its deletion tombstone."
+    },
     versionReview: {
       status: "current",
       indexedVersionId: "vendor-access-policy-v8",
@@ -513,6 +569,13 @@ const mockSearchResults: SearchResult[] = [
       checkedBeforeModel: true,
       reviewNote: "Unowned external upload is not an approved knowledge source and is blocked from answer use."
     },
+    sourceReliabilityReview: {
+      status: "unverified",
+      independentSourceCount: 0,
+      checkedBeforeModel: true,
+      answerUse: "blocked",
+      reviewNote: "The external upload is unverified and contains an egress request; block it before model context assembly."
+    },
     versionReview: {
       status: "unregistered",
       indexedVersionId: "external-upload-unregistered",
@@ -564,6 +627,13 @@ const mockSearchResults: SearchResult[] = [
       sourceSystem: "Policy intranet",
       checkedBeforeModel: true,
       reviewNote: "The GDPR guide is an approved reference for EU operations but does not control a California-focused retention query; blocked from answer use on jurisdiction grounds."
+    },
+    sourceReliabilityReview: {
+      status: "owner_attested",
+      independentSourceCount: 0,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The GDPR guide is owner-attested for EU operations, but it is not reliable direct evidence for this target retention question."
     },
     versionReview: {
       status: "current",
@@ -622,6 +692,13 @@ const mockSearchResults: SearchResult[] = [
       checkedBeforeModel: true,
       reviewNote: "Published HR memo is an approved reference for personnel matters but has no bearing on data-retention policy answers."
     },
+    sourceReliabilityReview: {
+      status: "owner_attested",
+      independentSourceCount: 0,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The People Operations memo is owner-attested and may be reliable for talent topics; relevance gating keeps it out of this retention answer."
+    },
     versionReview: {
       status: "current",
       indexedVersionId: "talent-retention-memo-v2",
@@ -673,6 +750,13 @@ const mockSearchResults: SearchResult[] = [
       sourceSystem: "HR policy portal",
       checkedBeforeModel: true,
       reviewNote: "The published corporate retention matrix is approved HR reference material; it supports handbook schedule claims without replacing the compliance source of record."
+    },
+    sourceReliabilityReview: {
+      status: "corroborated",
+      independentSourceCount: 1,
+      checkedBeforeModel: true,
+      answerUse: "allowed",
+      reviewNote: "The retention matrix is corroborated by the compliance audit source for overlapping schedule facts before model context assembly."
     },
     versionReview: {
       status: "current",

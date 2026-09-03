@@ -533,6 +533,7 @@ describe("context budget review", () => {
     result.relevanceReview.answerUse === "allowed" &&
     result.sourceLifecycleReview.answerUse === "allowed" &&
     result.sourceAuthorityReview.answerUse !== "blocked" &&
+    result.sourceReliabilityReview.answerUse === "allowed" &&
     result.versionReview.answerUse === "allowed" &&
     result.deduplicationReview.answerUse === "allowed" &&
     result.conflictReview.answerUse === "allowed" &&
@@ -572,6 +573,7 @@ describe("context budget review", () => {
       expect(chunk?.safetyReview.status).toBe("allowed");
       expect(chunk?.relevanceReview.answerUse).toBe("allowed");
       expect(chunk?.sourceAuthorityReview.answerUse).not.toBe("blocked");
+      expect(chunk?.sourceReliabilityReview.answerUse).toBe("allowed");
       expect(chunk?.versionReview.answerUse).toBe("allowed");
       expect(chunk?.deduplicationReview.answerUse).toBe("allowed");
       expect(chunk?.conflictReview.answerUse).toBe("allowed");
@@ -870,6 +872,51 @@ describe("retrieval relevance review", () => {
 
     for (const citation of demoSnapshot.answer?.citations ?? []) {
       expect(offTopicDocs.has(citation.documentName)).toBe(false);
+    }
+  });
+});
+
+describe("retrieval source reliability", () => {
+  it("checks source reliability before model context assembly", () => {
+    for (const result of demoSnapshot.searchResults) {
+      const review = result.sourceReliabilityReview;
+      expect(review.checkedBeforeModel).toBe(true);
+      expect(review.independentSourceCount).toBeGreaterThanOrEqual(0);
+      expect(["corroborated", "owner_attested", "unverified"]).toContain(review.status);
+      expect(review.reviewNote.length).toBeGreaterThan(40);
+    }
+  });
+
+  it("distinguishes cross-checked sources from owner-attested evidence", () => {
+    const corroborated = demoSnapshot.searchResults.filter(
+      result => result.sourceReliabilityReview.status === "corroborated"
+    );
+    expect(corroborated.length).toBeGreaterThan(0);
+    for (const result of corroborated) {
+      expect(result.sourceReliabilityReview.independentSourceCount).toBeGreaterThan(0);
+      expect(result.sourceReliabilityReview.answerUse).toBe("allowed");
+    }
+
+    const ownerAttested = demoSnapshot.searchResults.filter(
+      result => result.sourceReliabilityReview.status === "owner_attested"
+    );
+    expect(ownerAttested.length).toBeGreaterThan(0);
+    expect(ownerAttested.some(result => result.sourceReliabilityReview.independentSourceCount === 0)).toBe(true);
+  });
+
+  it("blocks unverified source evidence from direct citations", () => {
+    const unverified = demoSnapshot.searchResults.filter(
+      result => result.sourceReliabilityReview.status === "unverified"
+    );
+    expect(unverified.length).toBeGreaterThan(0);
+    for (const result of unverified) {
+      expect(result.sourceReliabilityReview.answerUse).toBe("blocked");
+    }
+
+    for (const citation of demoSnapshot.answer?.citations ?? []) {
+      const source = demoSnapshot.searchResults.find(result => result.chunkId === citation.sourceChunkId);
+      expect(source?.sourceReliabilityReview.answerUse).toBe("allowed");
+      expect(source?.sourceReliabilityReview.status).not.toBe("unverified");
     }
   });
 });
