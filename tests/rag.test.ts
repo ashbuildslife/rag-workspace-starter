@@ -702,6 +702,19 @@ describe("golden evaluation set", () => {
     }
   });
 
+  it("covers a multi-document question for cross-document answers", () => {
+    const multiDocument = demoGoldenEvalSuite.questions.filter(q => q.category === "multi_document");
+    expect(multiDocument).toHaveLength(1);
+
+    const [question] = multiDocument;
+    expect(question.expectedBehavior).toBe("answer");
+    expect(question.expectedSourceDocumentName).toBe("Q2 2026 Compliance Audit Report.pdf");
+    expect(question.groundTruth).toMatch(/seven years|7 years/i);
+    expect(question.groundTruth).toMatch(/30 calendar days/i);
+    expect(question.groundTruth).toMatch(/performance reviews|recruitment records/i);
+    expect(question.lastRunNote).toMatch(/audit|Vendor X|handbook/i);
+  });
+
   it("covers the conflicting-or-stale category most golden sets skip", () => {
     const staleConflict = demoGoldenEvalSuite.questions.filter(q => q.category === "conflicting_or_stale");
     expect(staleConflict.length).toBeGreaterThanOrEqual(1);

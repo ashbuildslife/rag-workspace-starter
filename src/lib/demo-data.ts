@@ -919,8 +919,8 @@ export const demoIngestionStatus: IngestionStatus = {
 };
 
 export const demoGoldenEvalSuite: GoldenEvalSuite = {
-  totalQuestions: 5,
-  passingCount: 4,
+  totalQuestions: 6,
+  passingCount: 5,
   failingCount: 1,
   lastRunAt: "2026-06-08T16:00:00Z",
   reembedCorpusChurnThresholdPct: 15,
@@ -984,6 +984,18 @@ export const demoGoldenEvalSuite: GoldenEvalSuite = {
       failureClass: "retrieval_failure",
       lastRunNote: "Retrieval failure, not generation failure: revision 6 Appendix B is not in the corpus, and the superseded revision 5 chunk is version-blocked. Ingest revision 6 and re-run.",
       owner: "Information Security"
+    },
+    {
+      id: "ge_6",
+      question: "Which retention facts require combining the compliance audit, Vendor X agreement, and employee handbook?",
+      groundTruth: "A complete answer combines the customer PII retention limit of seven years from the compliance audit, Vendor X's duty to delete or return data within 30 calendar days from the DPA, and the employee schedules for payroll, performance reviews, and unsuccessful recruitment records from the handbook.",
+      expectedSourceDocumentName: "Q2 2026 Compliance Audit Report.pdf",
+      category: "multi_document",
+      expectedBehavior: "answer",
+      lastRunStatus: "passing",
+      failureClass: "none",
+      lastRunNote: "Multi-document run combined the audit, Vendor X DPA, and employee handbook instead of treating a single top-ranked chunk as sufficient.",
+      owner: "Compliance Assurance"
     }
   ]
 };
