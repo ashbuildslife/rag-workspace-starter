@@ -933,3 +933,42 @@ describe("retrieval source reliability", () => {
     }
   });
 });
+
+
+describe("pre-model context admission", () => {
+  const budgetReview = demoSnapshot.answer?.groundingAudit.contextBudgetReview;
+  const eligibleResults = demoSnapshot.searchResults.filter(result =>
+    result.safetyReview.status === "allowed" &&
+    result.relevanceReview.answerUse === "allowed" &&
+    result.sourceLifecycleReview.answerUse === "allowed" &&
+    result.sourceAuthorityReview.answerUse !== "blocked" &&
+    result.sourceReliabilityReview.answerUse === "allowed" &&
+    result.versionReview.answerUse === "allowed" &&
+    result.deduplicationReview.answerUse === "allowed" &&
+    result.conflictReview.answerUse === "allowed" &&
+    result.authorizationReview.status === "authorized"
+  );
+
+  const admittedChunkIds = new Set([
+    ...(budgetReview?.includedChunkIds ?? []),
+    ...(budgetReview?.heldOutChunkIds ?? [])
+  ]);
+
+  it("admits only retrievals that clear every pre-model gate", () => {
+    expect(budgetReview).toBeDefined();
+    expect(eligibleResults).toHaveLength(budgetReview!.eligibleChunkCount);
+    expect(new Set(eligibleResults.map(result => result.chunkId))).toEqual(admittedChunkIds);
+  });
+
+  it("keeps unverified evidence out of model admission", () => {
+    const unverified = demoSnapshot.searchResults.filter(
+      result => result.sourceReliabilityReview.status === "unverified"
+    );
+    expect(unverified.length).toBeGreaterThan(0);
+
+    for (const result of unverified) {
+      expect(result.sourceReliabilityReview.answerUse).toBe("blocked");
+      expect(admittedChunkIds.has(result.chunkId)).toBe(false);
+    }
+  });
+});
